@@ -1,0 +1,5 @@
+package com.example.ead_backend.model.entity;
+
+public class Vehicle {
+
+}
