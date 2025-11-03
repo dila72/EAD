@@ -11,26 +11,26 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Toggle Button (Mobile) */}
+      {/* Toggle Button (Mobile & Tablet) */}
       <button
         onClick={() => setOpen(!open)}
-        className="p-3 text-gray-700 md:hidden fixed top-4 left-4 bg-white rounded-lg shadow-lg z-50 hover:bg-gray-100 transition-colors"
+        className="p-3 text-gray-700 lg:hidden fixed top-4 left-4 bg-white rounded-lg shadow-lg z-50 hover:bg-gray-100 transition-colors"
       >
         <FiMenu size={24} />
       </button>
 
-      {/* Overlay (Mobile) */}
+      {/* Overlay (Mobile & Tablet) */}
       {open && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-1/2 md:h-screen bg-white w-44 sm:w-48 md:w-56 lg:w-60 xl:w-64 p-3 flex flex-col transition-transform duration-300 z-50 shadow-md rounded-br-lg md:rounded-none overflow-y-auto
-        ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`fixed top-0 left-0 h-1/2 md:h-screen bg-white w-44 sm:w-48 md:w-56 lg:w-60 xl:w-64 p-3 flex flex-col transition-transform duration-300 z-50 shadow-md rounded-br-lg lg:rounded-none overflow-y-auto
+        ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
         <div className="flex flex-col items-center mb-4">
           <div className="bg-blue-500 rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center text-white text-sm font-medium">
