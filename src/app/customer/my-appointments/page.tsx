@@ -1,92 +1,155 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/Header";
+import { appointmentService, customerService } from '@/api/mockApiService';
+import type { Appointment, Customer } from '@/types';
 
 export default function MyAppointments() {
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadAppointments();
+  }, []);
+
+  const loadAppointments = async () => {
+    try {
+      setLoading(true);
+      const customerData = await customerService.getProfile();
+      setCustomer(customerData);
+
+      const [upcoming, completed] = await Promise.all([
+        appointmentService.getUpcomingAppointments(customerData.id),
+        appointmentService.getCompletedAppointments(customerData.id)
+      ]);
+
+      setUpcomingAppointments(upcoming);
+      setCompletedAppointments(completed);
+    } catch (error) {
+      console.error('Failed to load appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading appointments...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
       <TopBar title="My Appointments" />
 
-      <div className="pt-20 md:pl-64 px-4">
-        <p className="text-gray-700">Hello,</p>
-        <h2 className="text-xl font-semibold mb-4">Hi James</h2>
+      <div className="pt-20 md:pl-64 px-4 ml-10 mt-4 mr-5 mb-10">
+        <p className="text-gray-700 text-base">Hello,</p>
+        <h2 className="font-bold mb-6" style={{ fontSize: '20px' }}>Hi {customer?.name}</h2>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-3 text-center">
-            <p className="text-2xl font-bold text-green-500">3</p>
-            <p>Completed</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+            <p className="text-3xl font-bold text-green-500">{completedAppointments.length}</p>
+            <p className="text-base text-gray-600 mt-1">Completed</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-3 text-center">
-            <p className="text-2xl font-bold text-yellow-500">2</p>
-            <p>Upcoming</p>
+          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+            <p className="text-3xl font-bold text-yellow-500">{upcomingAppointments.length}</p>
+            <p className="text-base text-gray-600 mt-1">Upcoming</p>
           </div>
         </div>
 
         {/* Upcoming Appointments */}
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-semibold">Upcoming Appointments</h3>
-          <button className="bg-orange-400 text-white px-3 py-1 rounded text-sm">+ New</button>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-xl font-bold">Upcoming Appointments</h3>
+          <button className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-lg text-base font-medium transition-colors">+ New</button>
         </div>
-        <div className="overflow-x-auto bg-white rounded-lg shadow-md text-sm mb-6">
-          <table className="w-full text-left">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="p-2">ID</th>
-                <th className="p-2">Service</th>
-                <th className="p-2">Vehicle</th>
-                <th className="p-2">Date</th>
-                <th className="p-2">Time</th>
-                <th className="p-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t">
-                <td className="p-2">#1234</td>
-                <td className="p-2">Checkup</td>
-                <td className="p-2">ABD2040</td>
-                <td className="p-2">10.09.2020</td>
-                <td className="p-2">11.00am–12.00am</td>
-                <td className="p-2 text-orange-500 font-semibold">Upcoming</td>
-              </tr>
-              <tr className="border-t">
-                <td className="p-2">#1235</td>
-                <td className="p-2">Oil Change</td>
-                <td className="p-2">CBA3050</td>
-                <td className="p-2">17.09.2025</td>
-                <td className="p-2">11.00am–12.00am</td>
-                <td className="p-2 text-orange-500 font-semibold">Upcoming</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        
+        {upcomingAppointments.length === 0 ? (
+          <div className="bg-gray-100 rounded-lg p-4 mb-8 text-center text-gray-500 text-base">
+            No upcoming appointments
+          </div>
+        ) : (
+          <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
+            <table className="w-full text-left text-base">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="p-4 font-semibold">ID</th>
+                  <th className="p-4 font-semibold">Service</th>
+                  <th className="p-4 font-semibold">Vehicle</th>
+                  <th className="p-4 font-semibold">Date</th>
+                  <th className="p-4 font-semibold">Time</th>
+                  <th className="p-4 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcomingAppointments.map((appointment) => (
+                  <tr key={appointment.id} className="border-t hover:bg-gray-50 transition-colors">
+                    <td className="p-4">{appointment.id}</td>
+                    <td className="p-4">{appointment.serviceName}</td>
+                    <td className="p-4">{appointment.vehicleNumber}</td>
+                    <td className="p-4">{formatDate(appointment.date)}</td>
+                    <td className="p-4">{appointment.time}</td>
+                    <td className="p-4 text-orange-500 font-semibold">{appointment.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Completed */}
-        <h3 className="font-semibold mb-2">Completed Appointments</h3>
-        <div className="overflow-x-auto bg-white rounded-lg shadow-md text-sm">
-          <table className="w-full text-left">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="p-2">ID</th>
-                <th className="p-2">Service</th>
-                <th className="p-2">Vehicle</th>
-                <th className="p-2">Date</th>
-                <th className="p-2">Time</th>
-                <th className="p-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t">
-                <td className="p-2">#1234</td>
-                <td className="p-2">Checkup</td>
-                <td className="p-2">ABD2040</td>
-                <td className="p-2">10.09.2020</td>
-                <td className="p-2">11.00am–12.00am</td>
-                <td className="p-2 text-green-600 font-semibold">Completed</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <h3 className="text-xl font-bold mb-3">Completed Appointments</h3>
+        {completedAppointments.length === 0 ? (
+          <div className="bg-gray-100 rounded-lg p-4 text-center text-gray-500 text-base">
+            No completed appointments yet
+          </div>
+        ) : (
+          <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+            <table className="w-full text-left text-base">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="p-4 font-semibold">ID</th>
+                  <th className="p-4 font-semibold">Service</th>
+                  <th className="p-4 font-semibold">Vehicle</th>
+                  <th className="p-4 font-semibold">Date</th>
+                  <th className="p-4 font-semibold">Time</th>
+                  <th className="p-4 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {completedAppointments.map((appointment) => (
+                  <tr key={appointment.id} className="border-t hover:bg-gray-50 transition-colors">
+                    <td className="p-4">{appointment.id}</td>
+                    <td className="p-4">{appointment.serviceName}</td>
+                    <td className="p-4">{appointment.vehicleNumber}</td>
+                    <td className="p-4">{formatDate(appointment.date)}</td>
+                    <td className="p-4">{appointment.time}</td>
+                    <td className="p-4 text-green-600 font-semibold">{appointment.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

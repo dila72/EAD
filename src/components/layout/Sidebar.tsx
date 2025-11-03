@@ -23,35 +23,34 @@ export default function Sidebar() {
         ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="flex flex-col items-center mb-6">
-          <div className="bg-blue-500 rounded-full w-24 h-24 flex items-center justify-center text-white text-sm font-medium">
+          <div className="bg-blue-500 rounded-full w-32 h-32 flex items-center justify-center text-white text-base font-medium">
             User Photo
           </div>
-          <p className="mt-2 font-semibold text-gray-800">User name</p>
         </div>
 
-        <nav className="flex flex-col gap-2 text-gray-700">
-          <Link href="/dashboard" className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-500">
-            <FaCar /> Dashboard
+        <nav className="flex flex-col gap-2 text-gray-700 text-base">
+          <Link href="/dashboard" className="flex items-center gap-3 p-3 rounded-md hover:bg-blue-500 transition-colors">
+            <FaCar size={18} /> Dashboard
           </Link>
-          <Link href="/vehicles" className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-500">
-            <FaCar /> My Vehicles
+          <Link href="/vehicles" className="flex items-center gap-3 p-3 rounded-md hover:bg-blue-500 transition-colors">
+            <FaCar size={18} /> My Vehicles
           </Link>
-          <Link href="/appointments" className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-500">
-            <FaCalendarAlt /> My Appointments
+          <Link href="/appointments" className="flex items-center gap-3 p-3 rounded-md hover:bg-blue-500 transition-colors">
+            <FaCalendarAlt size={18} /> My Appointments
           </Link>
-          <Link href="/projects" className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-500">
-            <FaProjectDiagram /> My Projects
+          <Link href="/projects" className="flex items-center gap-3 p-3 rounded-md hover:bg-blue-500 transition-colors">
+            <FaProjectDiagram size={18} /> My Projects
           </Link>
-          <Link href="/profile" className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-500">
-            <FaUser /> Profile
+          <Link href="/profile" className="flex items-center gap-3 p-3 rounded-md hover:bg-blue-500 transition-colors">
+            <FaUser size={18} /> Profile
           </Link>
-          <Link href="/chatbot" className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-500">
-            <FaComments /> Chatbot
+          <Link href="/chatbot" className="flex items-center gap-3 p-3 rounded-md hover:bg-blue-500 transition-colors">
+            <FaComments size={18} /> Chatbot
           </Link>
         </nav>
 
-        <button className="mt-auto flex items-center gap-2 text-red-600 font-semibold hover:underline">
-          <FiLogOut /> Logout
+        <button className="mt-auto flex items-center gap-2 text-red-600 text-base font-semibold hover:underline">
+          <FiLogOut size={18} /> Logout
         </button>
       </div>
     </>
