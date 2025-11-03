@@ -64,28 +64,28 @@ export default function Dashboard() {
       <Sidebar />
       <Header title="Dashboard" />
 
-      <div className="pt-20 md:pl-64 px-4 ml-10 mt-4 mr-5 mb-10 ">
+      <div className="pt-16 md:pl-56 px-4 md:ml-10 mt-4 md:mr-5 mb-10">
         <p className="text-gray-700 text-base">Hello,</p>
-        <h2 className="font-bold mb-6" style={{ fontSize: '20px' }}>Hi {customer?.name}</h2>
+        <h2 className="text-lg font-bold mb-6">Hi {customer?.name}</h2>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+        <div className="flex md:grid md:grid-cols-3 gap-4 mb-8 overflow-x-auto scrollbar-hide py-2 -my-2">
+          <div className="bg-white rounded-lg shadow-md p-4 text-center min-w-[200px] flex-shrink-0">
             <p className="text-3xl font-bold text-red-500">{stats?.totalVehicles || 0}</p>
             <p className="text-base text-gray-600 mt-1">Vehicles</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-white rounded-lg shadow-md p-4 text-center min-w-[200px] flex-shrink-0">
             <p className="text-3xl font-bold text-yellow-500">{stats?.upcomingAppointments || 0}</p>
             <p className="text-base text-gray-600 mt-1">Upcoming Appointments</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-white rounded-lg shadow-md p-4 text-center min-w-[200px] flex-shrink-0">
             <p className="text-3xl font-bold text-green-500">{stats?.ongoingProjects || 0}</p>
             <p className="text-base text-gray-600 mt-1">Ongoing Projects</p>
           </div>
         </div>
 
         {/* Upcoming Appointments */}
-        <h3 className="text-xl font-bold mb-3">Upcoming Appointments</h3>
+        <h3 className="text-lg font-bold mb-3">Upcoming Appointments</h3>
         {upcomingAppointments.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-4 mb-4 text-center text-gray-600 text-base">
             No upcoming appointments
@@ -106,7 +106,7 @@ export default function Dashboard() {
         )}
 
         {/* Ongoing Projects */}
-        <h3 className="text-xl font-bold mb-3">Ongoing Projects</h3>
+        <h3 className="text-lg font-bold mb-3">Ongoing Projects</h3>
         {ongoingProjects.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-4 text-center text-gray-600 text-base">
             No ongoing projects
