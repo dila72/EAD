@@ -29,16 +29,16 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-1/2 bg-white w-56 p-3 flex flex-col transition-transform duration-300 z-50 shadow-md rounded-br-lg
+        className={`fixed top-0 left-0 h-1/2 md:h-screen bg-white w-44 sm:w-48 md:w-56 lg:w-60 xl:w-64 p-3 flex flex-col transition-transform duration-300 z-50 shadow-md rounded-br-lg md:rounded-none overflow-y-auto
         ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="flex flex-col items-center mb-4">
-          <div className="bg-blue-500 rounded-full w-24 h-24 flex items-center justify-center text-white text-sm font-medium">
+          <div className="bg-blue-500 rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center text-white text-sm font-medium">
             User Photo
           </div>
         </div>
 
-        <nav className="flex flex-col gap-1 text-gray-700 text-sm">
+  <nav className="flex flex-col gap-1 text-gray-700 text-sm md:text-base lg:text-base">
           <Link
             href="/customer/dashboard"
             className={`flex items-center gap-2 p-2 rounded-md transition-colors ${
@@ -56,17 +56,17 @@ export default function Sidebar() {
             <FaCar size={16} /> My Vehicles
           </Link>
           <Link
-            href="/customer/appointments"
+            href="/customer/my-appointments"
             className={`flex items-center gap-2 p-2 rounded-md transition-colors ${
-              pathname?.includes('/customer/appointments') ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
+              pathname?.includes('/customer/my-appointments') ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
             }`}
           >
             <FaCalendarAlt size={16} /> My Appointments
           </Link>
           <Link
-            href="/customer/projects"
+            href="/customer/my-projects"
             className={`flex items-center gap-2 p-2 rounded-md transition-colors ${
-              pathname?.includes('/customer/projects') ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
+              pathname?.includes('/customer/my-projects') ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
             }`}
           >
             <FaProjectDiagram size={16} /> My Projects
@@ -89,7 +89,7 @@ export default function Sidebar() {
           </Link>
         </nav>
 
-        <button className="mt-auto flex items-center gap-2 text-red-600 text-sm font-semibold hover:underline">
+        <button className="mt-auto flex items-center gap-2 p-2 rounded-md text-red-600 text-sm md:text-base lg:text-base hover:bg-red-50 transition-colors">
           <FiLogOut size={16} /> Logout
         </button>
       </div>
