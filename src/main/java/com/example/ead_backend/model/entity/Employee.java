@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "Vehicles")
+@Table(name = "Employees")
 @Data
-public class Vehicle {
+public class Employee {
     @Id
-    private String vehicleId;
+    private String employeeId;
 }
