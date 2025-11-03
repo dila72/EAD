@@ -1,10 +1,9 @@
 package com.example.ead_backend.model.enums;
 
-public enum AppointmentStatus {
-    // SCHEDULED,
-    // CONFIRMED,
+public enum ProjectStatus {
+    // PENDING,
     // IN_PROGRESS,
     // COMPLETED,
     // CANCELLED,
-    // NO_SHOW
+    // ON_HOLD
 }
