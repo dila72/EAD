@@ -23,6 +23,13 @@ export const customerService = {
     await delay();
     return mockCustomer;
   }
+  ,
+  async updateProfile(update: Partial<Customer>): Promise<Customer> {
+    await delay();
+    // shallow update the mock customer
+    Object.assign(mockCustomer, update);
+    return mockCustomer;
+  }
 };
 
 /**

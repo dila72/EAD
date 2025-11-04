@@ -6,8 +6,14 @@
 export interface Customer {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone: string;
+  address?: string;
+  nic?: string;
+  password?: string;
+  profileImage?: string;
   joinedDate: string;
 }
 
