@@ -9,8 +9,13 @@ import type { Customer, Vehicle, Appointment, Project } from '@/types';
 export const mockCustomer: Customer = {
   id: 'CUST001',
   name: 'James Wilson',
+  firstName: 'James',
+  lastName: 'Wilson',
   email: 'james.wilson@email.com',
   phone: '+1 (555) 123-4567',
+  address: '123 Main St, Springfield',
+  nic: 'NIC123456',
+  password: 'password123',
   joinedDate: '2024-01-15'
 };
 
@@ -24,24 +29,6 @@ export const mockVehicles: Vehicle[] = [
     model: 'Camry',
     year: 2020,
     type: 'Car'
-  },
-  {
-    id: 'VEH002',
-    customerId: 'CUST001',
-    vehicleNumber: 'CBB-5475',
-    make: 'Toyota',
-    model: 'Hiace',
-    year: 2019,
-    type: 'Van'
-  },
-  {
-    id: 'VEH003',
-    customerId: 'CUST001',
-    vehicleNumber: 'XYZ-7890',
-    make: 'Honda',
-    model: 'CR-V',
-    year: 2021,
-    type: 'SUV'
   }
 ];
 
