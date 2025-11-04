@@ -28,8 +28,8 @@ export default function CustomerLayout({
       <Header title={getPageTitle()} />
       
       {/* Main Content Area with responsive margins */}
-      <div className="md:ml-16 lg:ml-16 xl:ml-80 md:mr-16 lg:mr-16 xl:mt-16">
-        <div className="pt-16 px-6 md:px-8 lg:px-10 mt-4 mb-10">
+      <div className="lg:ml-64 xl:ml-72">
+        <div className="pt-20 pr-6 pb-6 pl-6 lg:pt-24 lg:pr-8 lg:pb-4 lg:pl-8 xl:pt-24 xl:pr-12 xl:pb-2 xl:pl-4">
           {children}
         </div>
       </div>

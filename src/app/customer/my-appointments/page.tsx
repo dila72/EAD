@@ -9,6 +9,7 @@ export default function MyAppointments() {
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
   const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllCompleted, setShowAllCompleted] = useState(false);
 
   useEffect(() => {
     loadAppointments();
@@ -117,32 +118,42 @@ export default function MyAppointments() {
               No completed appointments yet
             </div>
           ) : (
-            <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-            <table className="w-full text-left text-base">
-              <thead className="bg-gray-100 text-gray-700">
-                <tr>
-                  <th className="p-4 font-semibold">ID</th>
-                  <th className="p-4 font-semibold">Service</th>
-                  <th className="p-4 font-semibold">Vehicle</th>
-                  <th className="p-4 font-semibold">Date</th>
-                  <th className="p-4 font-semibold">Time</th>
-                  <th className="p-4 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {completedAppointments.map((appointment) => (
-                  <tr key={appointment.id} className="border-t hover:bg-gray-50 transition-colors">
-                    <td className="p-4">{appointment.id}</td>
-                    <td className="p-4">{appointment.serviceName}</td>
-                    <td className="p-4">{appointment.vehicleNumber}</td>
-                    <td className="p-4">{formatDate(appointment.date)}</td>
-                    <td className="p-4">{appointment.time}</td>
-                    <td className="p-4 text-green-600 font-semibold">{appointment.status}</td>
-                  </tr>
-                ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
+                <table className="w-full text-left text-base">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="p-4 font-semibold">ID</th>
+                      <th className="p-4 font-semibold">Service</th>
+                      <th className="p-4 font-semibold">Vehicle</th>
+                      <th className="p-4 font-semibold">Date</th>
+                      <th className="p-4 font-semibold">Time</th>
+                      <th className="p-4 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(showAllCompleted ? completedAppointments : completedAppointments.slice(0, 5)).map((appointment) => (
+                      <tr key={appointment.id} className="border-t hover:bg-gray-50 transition-colors">
+                        <td className="p-4">{appointment.id}</td>
+                        <td className="p-4">{appointment.serviceName}</td>
+                        <td className="p-4">{appointment.vehicleNumber}</td>
+                        <td className="p-4">{formatDate(appointment.date)}</td>
+                        <td className="p-4">{appointment.time}</td>
+                        <td className="p-4 text-green-600 font-semibold">{appointment.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {completedAppointments.length > 5 && (
+                <button
+                  onClick={() => setShowAllCompleted(!showAllCompleted)}
+                  className="mt-3 text-blue-600 hover:text-blue-800 text-sm md:text-base font-medium transition-colors"
+                >
+                  {showAllCompleted ? 'Show less...' : `Show more... (${completedAppointments.length - 5} more)`}
+                </button>
+              )}
+            </>
           )}
     </>
   );

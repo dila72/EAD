@@ -79,7 +79,7 @@ export default function Dashboard() {
         </div>
 
         {/* Upcoming Appointments */}
-        <h3 className="text-lg font-bold mb-3">Upcoming Appointments</h3>
+        <h3 className="lg:text-xl font-bold mb-3">Upcoming Appointments</h3>
         {upcomingAppointments.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-4 mb-4 text-center text-gray-600 text-base">
             No upcoming appointments
@@ -100,13 +100,13 @@ export default function Dashboard() {
         )}
 
         {/* Ongoing Projects */}
-        <h3 className="text-lg font-bold mb-3">Ongoing Projects</h3>
+        <h3 className="lg:text-xl font-bold mb-3">Ongoing Projects</h3>
         {ongoingProjects.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-4 text-center text-gray-600 text-base">
             No ongoing projects
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 ">
             {ongoingProjects.map((project) => (
               <div key={project.id} className="bg-white text-gray-600 shadow-md rounded-lg p-4 md:p-5">
                 <p className="text-base md:text-lg font-semibold">{project.taskName}</p>
