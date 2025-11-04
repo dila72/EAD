@@ -56,16 +56,15 @@ public class ProgressServiceImpl implements ProgressService {
         // Create notification
         String notificationMessage = String.format(
                 "Progress updated for appointment #%d: %s (%d%%)",
-                appointmentId, request.getStage(), request.getPercentage()
-        );
-        
+                appointmentId, request.getStage(), request.getPercentage());
+
         Notification notification = Notification.builder()
                 .userId(updatedBy) // In real scenario, should notify customer
                 .type(NotificationType.PROGRESS_UPDATE)
                 .message(notificationMessage)
                 .isRead(false)
                 .build();
-        
+
         notificationRepository.save(notification);
         log.debug("Notification created for progress update");
 
@@ -86,8 +85,7 @@ public class ProgressServiceImpl implements ProgressService {
                     appointmentId,
                     request.getStage(),
                     request.getPercentage(),
-                    request.getRemarks()
-            );
+                    request.getRemarks());
         } catch (Exception e) {
             log.error("Failed to send email notification: {}", e.getMessage());
         }
@@ -100,9 +98,9 @@ public class ProgressServiceImpl implements ProgressService {
     @Transactional(readOnly = true)
     public List<ProgressResponse> getProgressForAppointment(Long appointmentId) {
         log.debug("Fetching progress history for appointment {}", appointmentId);
-        
+
         List<ProgressUpdate> updates = progressUpdateRepository.findByAppointmentIdOrderByCreatedAtAsc(appointmentId);
-        
+
         return updates.stream()
                 .map(progressMapper::toResponse)
                 .collect(Collectors.toList());

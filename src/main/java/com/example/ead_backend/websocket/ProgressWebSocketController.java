@@ -30,7 +30,7 @@ public class ProgressWebSocketController {
     public ProgressUpdateMessage handleProgressUpdate(
             @DestinationVariable Long appointmentId,
             ProgressUpdateMessage message) {
-        
+
         log.info("Received progress update message for appointment {}", appointmentId);
         return message;
     }
@@ -47,7 +47,7 @@ public class ProgressWebSocketController {
     public StatusChangeMessage handleStatusChange(
             @DestinationVariable Long appointmentId,
             StatusChangeMessage message) {
-        
+
         log.info("Received status change message for appointment {}", appointmentId);
         return message;
     }
@@ -64,7 +64,7 @@ public class ProgressWebSocketController {
     public NotificationMessage handleNotification(
             @DestinationVariable Long userId,
             NotificationMessage message) {
-        
+
         log.info("Received notification message for user {}", userId);
         return message;
     }

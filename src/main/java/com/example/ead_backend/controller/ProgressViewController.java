@@ -29,11 +29,11 @@ public class ProgressViewController {
     @GetMapping("/{appointmentId}")
     public ResponseEntity<List<ProgressResponse>> getProgressHistory(
             @PathVariable Long appointmentId) {
-        
+
         log.info("Fetching progress history for appointment {}", appointmentId);
-        
+
         List<ProgressResponse> progressList = progressService.getProgressForAppointment(appointmentId);
-        
+
         return ResponseEntity.ok(progressList);
     }
 
@@ -46,17 +46,17 @@ public class ProgressViewController {
     @GetMapping("/{appointmentId}/latest")
     public ResponseEntity<ProgressResponse> getLatestProgress(
             @PathVariable Long appointmentId) {
-        
+
         log.info("Fetching latest progress for appointment {}", appointmentId);
-        
+
         List<ProgressResponse> progressList = progressService.getProgressForAppointment(appointmentId);
-        
+
         if (progressList.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        
+
         ProgressResponse latest = progressList.get(progressList.size() - 1);
-        
+
         return ResponseEntity.ok(latest);
     }
 
@@ -69,11 +69,11 @@ public class ProgressViewController {
     @GetMapping("/{appointmentId}/percentage")
     public ResponseEntity<Integer> getProgressPercentage(
             @PathVariable Long appointmentId) {
-        
+
         log.info("Calculating progress percentage for appointment {}", appointmentId);
-        
+
         int percentage = progressService.calculateProgressPercentage(appointmentId);
-        
+
         return ResponseEntity.ok(percentage);
     }
 }

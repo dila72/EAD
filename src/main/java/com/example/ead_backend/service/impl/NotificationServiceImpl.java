@@ -48,7 +48,7 @@ public class NotificationServiceImpl implements NotificationService {
     public List<NotificationDTO> getNotificationsForUser(Long userId) {
         log.debug("Fetching notifications for user {}", userId);
         List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        
+
         return notifications.stream()
                 .map(notificationMapper::toDto)
                 .collect(Collectors.toList());
@@ -58,7 +58,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void markAsRead(Long notificationId) {
         log.debug("Marking notification {} as read", notificationId);
-        
+
         notificationRepository.findById(notificationId).ifPresent(notification -> {
             notification.setIsRead(true);
             notificationRepository.save(notification);

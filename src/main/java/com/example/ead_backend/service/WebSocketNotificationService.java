@@ -42,7 +42,7 @@ public class WebSocketNotificationService {
 
         String destination = "/topic/progress." + appointmentId;
         messagingTemplate.convertAndSend(destination, message);
-        
+
         log.debug("Progress update broadcasted to {}", destination);
     }
 
@@ -64,7 +64,7 @@ public class WebSocketNotificationService {
 
         String destination = "/topic/notifications." + userId;
         messagingTemplate.convertAndSend(destination, message);
-        
+
         log.debug("Notification sent to {}", destination);
     }
 }

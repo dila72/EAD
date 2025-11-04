@@ -27,7 +27,7 @@ public class ProgressCalculationService {
      */
     public int calculateAverageProgress(Long appointmentId) {
         List<ProgressUpdate> updates = progressUpdateRepository.findByAppointmentIdOrderByCreatedAtAsc(appointmentId);
-        
+
         if (updates.isEmpty()) {
             log.debug("No progress updates found for appointment {}", appointmentId);
             return 0;
@@ -39,7 +39,7 @@ public class ProgressCalculationService {
 
         int average = sum / updates.size();
         log.debug("Calculated average progress for appointment {}: {}%", appointmentId, average);
-        
+
         return average;
     }
 
@@ -51,7 +51,7 @@ public class ProgressCalculationService {
      */
     public int getLatestProgress(Long appointmentId) {
         List<ProgressUpdate> updates = progressUpdateRepository.findByAppointmentIdOrderByCreatedAtAsc(appointmentId);
-        
+
         if (updates.isEmpty()) {
             return 0;
         }

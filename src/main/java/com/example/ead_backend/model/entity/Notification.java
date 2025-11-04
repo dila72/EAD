@@ -12,7 +12,8 @@ import java.sql.Timestamp;
 
 /**
  * Entity representing a notification sent to a user.
- * Used for tracking progress updates, status changes, and general notifications.
+ * Used for tracking progress updates, status changes, and general
+ * notifications.
  */
 @Entity
 @Table(name = "notifications")

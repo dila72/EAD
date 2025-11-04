@@ -54,19 +54,19 @@ public class EmailService {
      * @param percentage    the progress percentage
      * @param remarks       additional remarks
      */
-    public void sendProgressUpdateNotification(String toEmail, Long appointmentId, String stage, Integer percentage, String remarks) {
+    public void sendProgressUpdateNotification(String toEmail, Long appointmentId, String stage, Integer percentage,
+            String remarks) {
         String subject = "Progress Update - Appointment #" + appointmentId;
         String body = String.format(
                 "Dear Customer,\n\n" +
-                "Your appointment #%d has been updated:\n\n" +
-                "Stage: %s\n" +
-                "Progress: %d%%\n" +
-                "Remarks: %s\n\n" +
-                "Thank you for choosing our service.\n\n" +
-                "Best regards,\n" +
-                "Automobile Service Team",
-                appointmentId, stage, percentage, remarks != null ? remarks : "N/A"
-        );
+                        "Your appointment #%d has been updated:\n\n" +
+                        "Stage: %s\n" +
+                        "Progress: %d%%\n" +
+                        "Remarks: %s\n\n" +
+                        "Thank you for choosing our service.\n\n" +
+                        "Best regards,\n" +
+                        "Automobile Service Team",
+                appointmentId, stage, percentage, remarks != null ? remarks : "N/A");
 
         sendProgressEmail(toEmail, subject, body);
     }

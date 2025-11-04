@@ -13,7 +13,8 @@ import java.util.List;
 public interface ProgressUpdateRepository extends JpaRepository<ProgressUpdate, Long> {
 
     /**
-     * Find all progress updates for a specific appointment ordered by creation date.
+     * Find all progress updates for a specific appointment ordered by creation
+     * date.
      *
      * @param appointmentId the appointment ID
      * @return list of progress updates

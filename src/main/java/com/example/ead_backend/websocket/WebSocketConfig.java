@@ -23,7 +23,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // Enable simple broker for topic subscriptions
         config.enableSimpleBroker("/topic");
-        
+
         // Set application destination prefix for client messages
         config.setApplicationDestinationPrefixes("/app");
     }
