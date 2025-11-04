@@ -1,7 +1,7 @@
 package com.example.ead_backend.controller;
 
 import com.example.ead_backend.dto.CreateEmployeeRequest;
-import com.example.ead_backend.dto.EmployeeDTO;
+import com.example.ead_backend.dto.EmployeeCreateDTO;
 import com.example.ead_backend.service.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class AdminController {
         }
 
         try {
-            EmployeeDTO employee = adminService.createEmployee(request);
+            EmployeeCreateDTO employee = adminService.createEmployee(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(employee);
         } catch (IllegalArgumentException e) {
             Map<String, String> error = new HashMap<>();

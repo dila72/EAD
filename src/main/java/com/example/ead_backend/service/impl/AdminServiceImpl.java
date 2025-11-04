@@ -1,7 +1,7 @@
 package com.example.ead_backend.service.impl;
 
 import com.example.ead_backend.dto.CreateEmployeeRequest;
-import com.example.ead_backend.dto.EmployeeDTO;
+import com.example.ead_backend.dto.EmployeeCreateDTO;
 import com.example.ead_backend.model.entity.User;
 import com.example.ead_backend.model.enums.Role;
 import com.example.ead_backend.service.AdminService;
@@ -21,7 +21,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public EmployeeDTO createEmployee(CreateEmployeeRequest request) {
+    public EmployeeCreateDTO createEmployee(CreateEmployeeRequest request) {
         // Hash the password before creating user
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
@@ -36,7 +36,7 @@ public class AdminServiceImpl implements AdminService {
         );
 
         // Convert to DTO
-        return new EmployeeDTO(
+        return new EmployeeCreateDTO(
                 employee.getId(),
                 employee.getFirstName(),
                 employee.getLastName(),
