@@ -1,6 +1,5 @@
 package com.example.ead_backend.model.entity;
 
-import com.example.ead_backend.model.enums.Role;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,26 +28,30 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String phoneNumber;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Customer customer;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Employee employee;
 
     public User() {}
 
-    public User(String firstName, String lastName, String password, String email, String phoneNumber, Role role) {
+    public User(String firstName, String lastName, String password, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.role = role;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        // Determine role based on whether customer or employee exists
+        if (employee != null) {
+            return List.of(new SimpleGrantedAuthority("ROLE_" + employee.getRole().name()));
+        } else if (customer != null) {
+            return List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+        }
+        return List.of();
     }
 
     @Override
@@ -84,9 +87,9 @@ public class User implements UserDetails {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public Customer getCustomer() { return customer; }
+    public void setCustomer(Customer customer) { this.customer = customer; }
 
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
+    public Employee getEmployee() { return employee; }
+    public void setEmployee(Employee employee) { this.employee = employee; }
 }

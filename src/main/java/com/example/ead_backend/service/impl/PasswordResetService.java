@@ -1,4 +1,4 @@
-package com.example.ead_backend.service;
+package com.example.ead_backend.service.impl;
 
 import com.example.ead_backend.model.entity.OTP;
 import com.example.ead_backend.model.entity.User;

@@ -3,8 +3,9 @@ package com.example.ead_backend.controller;
 import com.example.ead_backend.dto.AuthResponse;
 import com.example.ead_backend.dto.LoginRequest;
 import com.example.ead_backend.dto.SignupRequest;
-import com.example.ead_backend.model.enums.Role;
+import com.example.ead_backend.model.entity.Customer;
 import com.example.ead_backend.model.entity.User;
+import com.example.ead_backend.service.CustomerService;
 import com.example.ead_backend.service.impl.UserService;
 import com.example.ead_backend.util.JwtUtil;
 import jakarta.validation.Valid;
@@ -36,6 +37,9 @@ public class AuthController {
     private UserService userService;
 
     @Autowired
+    private CustomerService customerService;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
@@ -59,7 +63,13 @@ public class AuthController {
             String token = jwtUtil.generateToken(userDetails);
             User user = (User) userDetails;
 
-            return ResponseEntity.ok(new AuthResponse(token, user.getEmail(), user.getRole().name()));
+            // Determine role from user's customer or employee relationship
+            String role = "CUSTOMER";
+            if (user.getEmployee() != null) {
+                role = user.getEmployee().getRole().name();
+            }
+
+            return ResponseEntity.ok(new AuthResponse(token, user.getEmail(), role));
         } catch (BadCredentialsException e) {
             return ResponseEntity.badRequest().body("Invalid email or password");
         } catch (Exception e) {
@@ -76,28 +86,28 @@ public class AuthController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        // Ensure only customers can sign up through this endpoint
-        if (signupRequest.getRole() != Role.CUSTOMER) {
-            return ResponseEntity.badRequest().body("Only customer accounts can be created through signup. Employee accounts must be created by administrators.");
-        }
-
         try {
             // Hash the password before creating user
             String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
 
+            // Create User entity
             User user = userService.createUser(
                     signupRequest.getFirstName(),
                     signupRequest.getLastName(),
                     encodedPassword,
-                    signupRequest.getEmail(),
-                    signupRequest.getPhoneNumber(),
-                    Role.CUSTOMER // Force customer role
+                    signupRequest.getEmail()
             );
+
+            // Create Customer entity linked to the User
+            Customer customer = customerService.createCustomer(user, signupRequest.getPhoneNumber());
+
+            // Set the customer relationship in user
+            user.setCustomer(customer);
 
             // Generate JWT token for the newly created user
             String token = jwtUtil.generateToken(user);
 
-            return ResponseEntity.ok(new AuthResponse(token, user.getEmail(), user.getRole().name()));
+            return ResponseEntity.ok(new AuthResponse(token, user.getEmail(), "CUSTOMER"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -107,7 +117,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
-        // Invalidate the JWT token on the client side
+        // JWT tokens are stateless, so logout is handled client-side by removing the token
         return ResponseEntity.ok("Logout successful");
     }
 }
