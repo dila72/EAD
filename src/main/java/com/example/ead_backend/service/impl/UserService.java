@@ -1,6 +1,5 @@
 package com.example.ead_backend.service.impl;
 
-import com.example.ead_backend.model.enums.Role;
 import com.example.ead_backend.model.entity.User;
 import com.example.ead_backend.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ public class UserService implements UserDetailsService {
         return userRepo.save(user);
     }
 
-    public User createUser(String firstName, String lastName, String password, String email, String phoneNumber, Role role) {
+    public User createUser(String firstName, String lastName, String password, String email) {
         // Validate email format
         if (!isValidEmail(email)) {
             throw new IllegalArgumentException("Invalid email format");
@@ -46,7 +45,7 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        User user = new User(firstName, lastName, password, email, phoneNumber, role);
+        User user = new User(firstName, lastName, password, email);
         return save(user);
     }
 

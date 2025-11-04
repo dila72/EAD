@@ -4,7 +4,7 @@ import com.example.ead_backend.dto.ChangePasswordRequest;
 import com.example.ead_backend.dto.ForgotPasswordRequest;
 import com.example.ead_backend.dto.ResetPasswordRequest;
 import com.example.ead_backend.dto.VerifyOtpRequest;
-import com.example.ead_backend.service.PasswordResetService;
+import com.example.ead_backend.service.impl.PasswordResetService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
