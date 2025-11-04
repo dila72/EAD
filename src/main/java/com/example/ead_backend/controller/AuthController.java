@@ -86,7 +86,8 @@ public class AuthController {
             String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
 
             User user = userService.createUser(
-                    signupRequest.getName(),
+                    signupRequest.getFirstName(),
+                    signupRequest.getLastName(),
                     encodedPassword,
                     signupRequest.getEmail(),
                     signupRequest.getPhoneNumber(),
@@ -102,5 +103,11 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        // Invalidate the JWT token on the client side
+        return ResponseEntity.ok("Logout successful");
     }
 }

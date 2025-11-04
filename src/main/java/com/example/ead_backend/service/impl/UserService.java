@@ -30,7 +30,7 @@ public class UserService implements UserDetailsService {
         return userRepo.save(user);
     }
 
-    public User createUser(String name, String password, String email, String phoneNumber, Role role) {
+    public User createUser(String firstName, String lastName, String password, String email, String phoneNumber, Role role) {
         // Validate email format
         if (!isValidEmail(email)) {
             throw new IllegalArgumentException("Invalid email format");
@@ -46,7 +46,7 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        User user = new User(name, password, email, phoneNumber, role);
+        User user = new User(firstName, lastName, password, email, phoneNumber, role);
         return save(user);
     }
 
