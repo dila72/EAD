@@ -3,6 +3,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { FaCar, FaCalendarAlt, FaProjectDiagram, FaUser, FaComments } from "react-icons/fa";
+import { MdDashboard } from "react-icons/md";
 import Link from "next/link";
 
 export default function Sidebar() {
@@ -45,7 +46,7 @@ export default function Sidebar() {
               pathname?.includes('/customer/dashboard') ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
             }`}
           >
-            <FaCar size={16} /> Dashboard
+            <MdDashboard size={16} /> Dashboard
           </Link>
           <Link
             href="/customer/vehicles"

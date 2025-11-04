@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
 import { dashboardService, customerService, appointmentService, projectService } from '@/api/mockApiService';
 import type { Customer, Appointment, Project, DashboardStats } from '@/types';
 
@@ -60,14 +58,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar />
-      <Header title="Dashboard" />
-
-      <div className="md:ml-16 lg:ml-16 xl:ml-80 md:mr-16 lg:mr-16 xl:mt-16">
-        <div className="pt-16 px-6  md:px-8 lg:px-10 mt-4 mb-10">
-          <p className="text-gray-700 text-sm md:text-base">Hello,</p>
-          <h2 className="text-base md:text-lg lg:text-xl font-bold mb-6">Hi {customer?.name}</h2>
+    <>
+      <p className="text-gray-700 text-sm md:text-base">Hello,</p>
+      <h2 className="text-base md:text-lg lg:text-xl font-bold mb-6">Hi {customer?.name}</h2>
 
           {/* Stats */}
           <div className="flex md:grid md:grid-cols-3 gap-6 mb-8 overflow-x-auto scrollbar-hide py-2 -my-2">
@@ -126,8 +119,6 @@ export default function Dashboard() {
               ))}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Sidebar from "@/components/layout/Sidebar";
-import TopBar from "@/components/layout/Header";
 import { appointmentService, customerService } from '@/api/mockApiService';
 import type { Appointment, Customer } from '@/types';
 
@@ -57,15 +55,9 @@ export default function MyAppointments() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar />
-      <TopBar title="My Appointments" />
-
-      <div className="md:ml-16 lg:ml-16 xl:ml-80
-       md:mr-16 lg:mr-16 xl:mr-16 xl:mt-16">
-        <div className="pt-16 px-6 md:px-8 lg:px-10 mt-4 mb-10">
-          <p className="text-gray-700 text-sm md:text-base">Hello,</p>
-          <h2 className="text-base md:text-lg font-bold mb-6">Hi {customer?.name}</h2>
+    <>
+      <p className="text-gray-700 text-sm md:text-base">Hello,</p>
+      <h2 className="text-base md:text-lg lg:text-xl font-bold mb-6">Hi {customer?.name}</h2>
 
           {/* Stats */}
           <div className="flex md:grid md:grid-cols-2 gap-6 mb-8 overflow-x-auto scrollbar-hide py-2 -my-2">
@@ -119,7 +111,7 @@ export default function MyAppointments() {
         )}
 
           {/* Completed */}
-          <h3 className="text-lg font-bold mb-3">Completed Appointments</h3>
+          <h3 className="text-lg font-bold mb-3 lg:text-xl ">Completed Appointments</h3>
           {completedAppointments.length === 0 ? (
             <div className="bg-gray-100 rounded-lg p-4 text-center text-gray-500 text-base">
               No completed appointments yet
@@ -152,8 +144,6 @@ export default function MyAppointments() {
               </table>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
