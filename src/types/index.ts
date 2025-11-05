@@ -13,7 +13,6 @@ export interface Customer {
   address?: string;
   nic?: string;
   password?: string;
-  profileImage?: string;
   joinedDate: string;
 }
 
