@@ -3,15 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Clock, Car, CheckCircle, XCircle, Plus, Eye } from 'lucide-react';
-import { customerService } from '@/api/mockApiService';
-import type { Appointment, Customer } from '@/types';
+import { appointmentService } from '@/lib/api/appointmentService';
+import type { Appointment } from '@/lib/api/appointmentService';
 
 export default function MyAppointments() {
   const router = useRouter();
-  const [customer, setCustomer] = useState<Customer | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAppointments();
@@ -20,14 +20,13 @@ export default function MyAppointments() {
   const loadAppointments = async () => {
     try {
       setLoading(true);
-      const customerData = await customerService.getProfile();
-      setCustomer(customerData);
-
-      // Import mock appointments
-      const { mockAppointments } = await import('@/data/mockData');
-      setAppointments(mockAppointments);
+      setError(null);
+      const apts = await appointmentService.getAllAppointments();
+      setAppointments(apts);
     } catch (error) {
       console.error('Failed to load appointments:', error);
+      setError('Failed to load appointments');
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -70,23 +69,49 @@ export default function MyAppointments() {
   const completedCount = appointments.filter(a => a.status.toLowerCase() === 'completed').length;
   const cancelledCount = appointments.filter(a => a.status.toLowerCase() === 'cancelled').length;
 
-  // Cancel an appointment (confirmation dialog then remove row)
-  const handleCancel = (appointmentId: string) => {
-    const confirmed = window.confirm('Are you sure you want to cancel this appointment?');
+  // Cancel an appointment — behaves the same as Delete (permanent removal)
+  const handleCancel = async (appointmentId: string) => {
+    const confirmed = window.confirm('Are you sure you want to cancel this appointment? This action will remove the appointment.');
     if (!confirmed) return;
 
-    setAppointments(prev => prev.filter(a => a.id !== appointmentId));
-    // Simple notification - replace with toast later
-    window.alert('Appointment cancelled');
+    if (!appointmentId) {
+      console.error('Attempted to cancel appointment with empty id');
+      window.alert('Unable to cancel appointment: invalid id');
+      return;
+    }
+
+    try {
+      await appointmentService.deleteAppointment(appointmentId);
+      // Remove the appointment row from UI
+      setAppointments(prev => prev.filter(a => a.id !== appointmentId));
+      window.alert('Appointment cancelled');
+    } catch (err: unknown) {
+      console.error('Cancel (delete) failed:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      window.alert('Failed to cancel appointment: ' + (msg || 'Unknown error'));
+    }
   };
 
   // Delete a completed appointment (only available in Completed tab)
-  const handleDelete = (appointmentId: string) => {
+  const handleDelete = async (appointmentId: string) => {
     const confirmed = window.confirm('Delete this completed appointment? This action cannot be undone.');
     if (!confirmed) return;
 
-    setAppointments(prev => prev.filter(a => a.id !== appointmentId));
-    window.alert('Appointment deleted');
+    if (!appointmentId) {
+      console.error('Attempted to delete appointment with empty id');
+      window.alert('Unable to delete appointment: invalid id');
+      return;
+    }
+
+    try {
+      await appointmentService.deleteAppointment(appointmentId);
+      setAppointments(prev => prev.filter(a => a.id !== appointmentId));
+      window.alert('Appointment deleted');
+    } catch (err: unknown) {
+      console.error('Delete failed:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      window.alert('Failed to delete appointment: ' + (msg || 'Unknown error'));
+    }
   };
 
   if (loading) {
