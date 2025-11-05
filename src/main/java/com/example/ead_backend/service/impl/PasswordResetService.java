@@ -4,6 +4,7 @@ import com.example.ead_backend.model.entity.OTP;
 import com.example.ead_backend.model.entity.User;
 import com.example.ead_backend.repository.OTPRepository;
 import com.example.ead_backend.repository.UserRepo;
+import com.example.ead_backend.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -70,4 +70,34 @@ public class EmailService {
 
         sendProgressEmail(toEmail, subject, body);
     }
+
+    /**
+     * Send OTP email for password reset.
+     *
+     * @param to  the recipient email address
+     * @param otp the OTP code
+     */
+    public void sendOTP(String to, String otp) {
+        try {
+            log.info("Sending OTP email to {}", to);
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromAddress);
+            message.setTo(to);
+            message.setSubject("Password Reset OTP - Auto Mobile");
+            message.setText("Dear User,\n\n" +
+                    "You have requested to reset your password.\n\n" +
+                    "Your OTP for password reset is: " + otp + "\n\n" +
+                    "This OTP is valid for 10 minutes.\n\n" +
+                    "If you did not request this, please ignore this email.\n\n" +
+                    "Best regards,\n" +
+                    "Auto Mobile Team");
+
+            mailSender.send(message);
+            log.info("OTP email sent successfully to {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send OTP email to {}: {}", to, e.getMessage(), e);
+            throw new RuntimeException("Failed to send email: " + e.getMessage());
+        }
+    }
 }
