@@ -1,23 +1,91 @@
 "use client";
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+// Mock user database
+const MOCK_USERS = [
+  // Admin
+  { email: 'admin@autocare.com', password: 'admin123', role: 'admin', name: 'Admin User' },
+  
+  // Employees
+  { email: 'mike.johnson@autocare.com', password: 'employee123', role: 'employee', name: 'Mike Johnson' },
+  { email: 'david.smith@autocare.com', password: 'employee123', role: 'employee', name: 'David Smith' },
+  { email: 'robert.brown@autocare.com', password: 'employee123', role: 'employee', name: 'Robert Brown' },
+  
+  // Customers
+  { email: 'james.wilson@email.com', password: 'customer123', role: 'customer', name: 'James Wilson' },
+  { email: 'john.doe@email.com', password: 'customer123', role: 'customer', name: 'John Doe' },
+  { email: 'sarah.johnson@email.com', password: 'customer123', role: 'customer', name: 'Sarah Johnson' },
+];
+
 const LoginPage = () => {
+  const router = useRouter();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     const formData = new FormData(e.target);
-    const email = formData.get('email');
-    const password = formData.get('password');
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
     
-    console.log('Login attempt:', { email, password });
-    // Add your login logic here
+    // Find user in mock database
+    const user = MOCK_USERS.find(u => u.email === email && u.password === password);
+    
+    if (!user) {
+      setError('Invalid email or password');
+      setLoading(false);
+      return;
+    }
+
+    // Store user info in localStorage
+    localStorage.setItem('currentUser', JSON.stringify({
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    }));
+
+    // Redirect based on role
+    setTimeout(() => {
+      if (user.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else if (user.role === 'employee') {
+        router.push('/employee/dashboard');
+      } else if (user.role === 'customer') {
+        router.push('/customer/dashboard');
+      }
+    }, 500);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="w-full max-w-sm text-center">
-        <h1 className="text-5xl font-bold mb-2">LOGIN</h1>
-        <p className="text-gray-600 text-sm mb-6">
-          If you have an account with us, please log in.
-        </p>
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-4xl font-bold mb-2 text-center">LOGIN</h1>
+          <p className="text-gray-600 text-sm mb-6 text-center">
+            If you have an account with us, please log in.
+          </p>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Mock Credentials Info */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs font-semibold text-blue-800 mb-2">Test Credentials:</p>
+            <div className="space-y-1 text-xs text-blue-700">
+              <p><strong>Admin:</strong> admin@autocare.com / admin123</p>
+              <p><strong>Employee:</strong> mike.johnson@autocare.com / employee123</p>
+              <p><strong>Customer:</strong> james.wilson@email.com / customer123</p>
+            </div>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -38,50 +106,25 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-gray-900 text-white font-semibold py-2 rounded-full hover:bg-gray-800 transition"
+            disabled={loading}
+            className="w-full bg-gray-900 text-white font-semibold py-2 rounded-full hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            SIGN IN
+            {loading ? 'Signing in...' : 'SIGN IN'}
           </button>
         </form>
 
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
-          
-          <div className="mt-6">
-            <button
-              type="button"
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" width="24" height="24">
-                <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                  <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
-                  <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
-                  <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
-                  <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
-                </g>
-              </svg>
-              Sign in with Google
-            </button>
-          </div>
+          <p className="text-sm text-gray-600 mt-6 text-center">
+            Don't have an account?{" "}
+            <a href="/auth/signup" className="font-semibold text-blue-600 hover:underline">
+              Create an account
+            </a>
+          </p>
+          <p className="text-sm text-gray-600 text-center mt-2">
+            <a href="/auth/forgot-password" className="font-semibold text-blue-600 hover:underline">
+              Forgot your password?
+            </a>
+          </p>
         </div>
-
-        <p className="text-sm text-gray-600 mt-4">
-          Don't have an account?{" "}
-          <a href="/signup" className="font-semibold hover:underline">
-            Create an account
-          </a>{" "}
-          or{" "}
-          <a href="/request-reset" className="font-semibold hover:underline">
-            Forgot your password?
-          </a>
-        </p>
       </div>
     </div>
   );
