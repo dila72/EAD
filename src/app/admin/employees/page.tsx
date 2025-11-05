@@ -31,7 +31,8 @@ export default function EmployeesPage() {
     lastName: '',
     email: '',
     password: '',
-    phone: '',
+    phoneNumber: '',
+    specialization: '',
     position: '',
     department: '',
     status: 'active' as 'active' | 'on-leave' | 'inactive',
@@ -149,7 +150,8 @@ export default function EmployeesPage() {
       lastName: rest.join(' ') || '',
       email: employee.email,
       password: '',
-      phone: employee.phone,
+      phoneNumber: employee.phone,
+      specialization: employee.specialization.join(', '),
       position: employee.position,
       department: employee.department,
       status: employee.status,
@@ -172,7 +174,8 @@ export default function EmployeesPage() {
       lastName: '',
       email: '',
       password: '',
-      phone: '',
+      phoneNumber: '',
+      specialization: '',
       position: '',
       department: '',
       status: 'active',
@@ -192,25 +195,35 @@ export default function EmployeesPage() {
       }
 
       try {
-        // Only send required fields to backend
-        const newEmployee = await api.post('/admin/employees', {
+        // Send required and optional fields to backend
+        const requestData: any = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
-        });
+        };
         
-        // Add to local state with frontend-only fields
+        // Add optional fields if provided
+        if (formData.phoneNumber) {
+          requestData.phoneNumber = formData.phoneNumber;
+        }
+        if (formData.specialization) {
+          requestData.specialization = formData.specialization;
+        }
+        
+        const newEmployee = await api.post('/admin/employees', requestData);
+        
+        // Add to local state with all fields
         setEmployees([...employees, {
           id: newEmployee.id || Date.now(),
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
-          phone: formData.phone || '',
+          phone: formData.phoneNumber || '',
           employeeId: newEmployee.employeeId || `EMP-2024-${String(employees.length + 1).padStart(3, '0')}`,
           position: formData.position || 'Technician',
           department: formData.department || 'Service Department',
           joinedDate: new Date().toISOString().split('T')[0],
-          specialization: [],
+          specialization: formData.specialization ? formData.specialization.split(',').map(s => s.trim()) : [],
           completedServices: 0,
           status: formData.status,
         }]);
@@ -224,7 +237,7 @@ export default function EmployeesPage() {
       // Update only frontend state for editing (frontend-only fields)
       setEmployees(employees.map(emp =>
         emp.id === selectedEmployee.id
-          ? { ...emp, name: `${formData.firstName} ${formData.lastName}`, email: formData.email, phone: formData.phone, position: formData.position, department: formData.department, status: formData.status }
+          ? { ...emp, name: `${formData.firstName} ${formData.lastName}`, email: formData.email, phone: formData.phoneNumber, position: formData.position, department: formData.department, status: formData.status }
           : emp
       ));
       alert('Employee updated successfully!');
@@ -445,18 +458,33 @@ export default function EmployeesPage() {
                   </div>
                 )}
 
-                {/* Phone - Frontend only */}
+                {/* Phone Number - Optional */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone (Frontend Only)
+                    Phone Number (Optional)
                   </label>
                   <input
                     type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    value={formData.phoneNumber}
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="+1 234-567-8900"
                   />
+                </div>
+
+                {/* Specialization - Optional */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Specialization (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.specialization}
+                    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Engine Repair, Brake Systems"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Separate multiple specializations with commas</p>
                 </div>
 
                 {/* Position - Frontend only, optional */}
