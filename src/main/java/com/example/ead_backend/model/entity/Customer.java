@@ -25,11 +25,11 @@ public class Customer {
     @Column(nullable = false)
     private String phoneNumber;
 
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vehicle> vehicles;
+
 //    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<Appointment> appointments;
-//
-//    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Vehicle> vehicles;
 
     public Customer(User user, String phoneNumber) {
         this.user = user;

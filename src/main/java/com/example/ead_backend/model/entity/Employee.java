@@ -30,20 +30,15 @@ public class Employee {
     @Column(nullable = false)
     private LocalDate joinedDate;
 
-//    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Appointment> appointments;
-//
-//    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Project> projects;
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Appointment> appointments;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Project> projects;
 
     public Employee(User user, Role role, LocalDate joinedDate) {
         this.user = user;
         this.role = role;
         this.joinedDate = joinedDate;
     }
-}
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Appointment> appointments;
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Project> projects;
 }
