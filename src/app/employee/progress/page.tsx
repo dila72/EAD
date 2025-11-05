@@ -316,7 +316,7 @@ function ServiceProgressCard({
       {/* Action Buttons */}
       <div className="flex gap-2">
         <button
-          onClick={() => onTimerToggle(appointment.appointmentId)}
+          onClick={() => onTimerToggle(Number(appointment.appointmentId))}
           className={`flex-1 px-4 py-2 rounded-md text-white font-medium transition flex items-center justify-center gap-2 ${
             appointment.timerRunning 
               ? 'bg-red-500 hover:bg-red-600' 
@@ -367,7 +367,7 @@ export default function EmployeeProgressPage() {
 
   // Transform API appointment data to AppointmentProgress format
   const transformAppointment = (item: Appointment): AppointmentProgress => ({
-    appointmentId: item.id,
+    appointmentId: typeof item.id === 'string' ? parseInt(item.id) : item.id,
     serviceName: item.serviceName || 'Service',
     location: item.location || 'Location TBD',
     customerName: item.customerName || 'Unknown Customer',
