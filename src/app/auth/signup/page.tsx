@@ -3,20 +3,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-import { useRouter } from "next/navigation";
-
-import { authNotifications } from "@/lib/notificationService";
 
 const SignupPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   
   const { signup } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,19 +21,16 @@ const SignupPage = () => {
     setError("");
     
     try {
-      const success = await signup(email, password, `${firstName} ${lastName}`);
-      
-      if (success) {
-        authNotifications.signupSuccess();
-        router.push("/"); // Redirect to home page
-      } else {
-        setError("Failed to create account. Email might already be in use.");
-        authNotifications.signupError("Failed to create account");
-      }
-    } catch (err) {
+      await signup({
+        firstName,
+        lastName,
+        email,
+        password,
+        phoneNumber
+      });
+    } catch (err: any) {
       console.error("Signup error:", err);
-      setError("An error occurred during signup");
-      authNotifications.signupError("An error occurred during signup");
+      setError(err.message || "An error occurred during signup");
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +89,16 @@ const SignupPage = () => {
           />
 
           <input
+            type="tel"
+            placeholder="Phone Number"
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-800"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            disabled={isLoading}
+            required
+          />
+
+          <input
             type="password"
             placeholder="Password"
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-800"
@@ -116,9 +120,9 @@ const SignupPage = () => {
 
         <p className="text-sm text-gray-600 mt-4">
           Already have an account?{" "}
-          <Link href="/login" className="font-semibold hover:underline">
+          <a href="/auth/login" className="font-semibold hover:underline">
             Login
-          </Link>
+          </a>
         </p>
       </div>
     </div>
