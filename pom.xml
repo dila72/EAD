@@ -46,6 +46,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<!-- Add Spring Boot Mail starter to provide org.springframework.mail classes -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<!-- Add Spring Boot WebSocket starter for WebSocket support -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 		<dependency>
     <groupId>com.h2database</groupId>
     <artifactId>h2</artifactId>
@@ -90,6 +100,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-messaging</artifactId>
+    </dependency>
+		<!-- JWT dependencies for authentication -->
+		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.11.5</version>
@@ -106,10 +121,11 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Cloudinary for image storage -->
 		<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-mail</artifactId>
-				<version>3.5.6</version>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.36.0</version>
 		</dependency>
 	</dependencies>
 
