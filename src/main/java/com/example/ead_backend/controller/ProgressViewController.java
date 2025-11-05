@@ -16,6 +16,7 @@ import java.util.List;
 @RequestMapping("/api/customer/progress")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = {"http://localhost:3001", "http://localhost:3000"})
 public class ProgressViewController {
 
     private final ProgressService progressService;
