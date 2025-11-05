@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Clock, Car, ArrowLeft, Check } from 'lucide-react';
+import { appointmentService } from '@/lib/api/appointmentService';
 
 export default function BookAppointmentPage() {
   const router = useRouter();
@@ -66,9 +67,61 @@ export default function BookAppointmentPage() {
     });
   };
 
-  const handleBookAppointment = () => {
-    alert('Appointment booked successfully!');
-    router.push('/customer/my-appointments');
+  const parseTimeTo24 = (time12: string) => {
+    // expects format like '09:30 AM'
+    const [time, modifier] = time12.split(' ');
+  const [h, m] = time.split(':').map(Number);
+  let hours = h;
+  const mins = m;
+    if (modifier === 'PM' && hours !== 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+  };
+
+  const addMinutes = (time24: string, mins: number) => {
+    const [h, m] = time24.split(':').map(Number);
+    const dt = new Date();
+    dt.setHours(h);
+    dt.setMinutes(m + mins);
+    return `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
+  };
+
+
+
+  const handleBookAppointment = async () => {
+    // Build payload matching backend AppointmentDTO
+    if (!selectedService || !selectedVehicle || !selectedDate || !selectedTimeSlot) {
+      window.alert('Please complete the booking form');
+      return;
+    }
+
+    const serviceObj = services.find(s => s.id === selectedService);
+    const vehicleObj = vehicles.find(v => v.id === selectedVehicle);
+
+
+
+    const start24 = parseTimeTo24(selectedTimeSlot);
+    const end24 = addMinutes(start24, 30); // assume 30 min slot
+
+    const payload = {
+      service: serviceObj?.name || selectedService,
+      vehicleNo: vehicleObj?.number || selectedVehicle,
+      date: selectedDate,
+      startTime: start24,
+      endTime: end24,
+      status: 'UPCOMING'
+    };
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore Sending backend AppointmentDTO shape
+      await appointmentService.createAppointment(payload as any);
+      window.alert('Appointment booked successfully!');
+      router.push('/customer/my-appointments');
+    } catch (err) {
+      console.error('Booking failed', err);
+      window.alert('Failed to book appointment');
+    }
   };
 
   const canProceed = () => {
