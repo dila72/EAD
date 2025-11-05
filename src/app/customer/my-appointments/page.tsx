@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Clock, Car, CheckCircle, XCircle, Plus, Eye } from 'lucide-react';
-import { appointmentService, customerService } from '@/api/mockApiService';
+import { customerService } from '@/api/mockApiService';
 import type { Appointment, Customer } from '@/types';
 
 export default function MyAppointments() {
@@ -69,6 +69,25 @@ export default function MyAppointments() {
   const upcomingCount = appointments.filter(a => a.status.toLowerCase() === 'upcoming').length;
   const completedCount = appointments.filter(a => a.status.toLowerCase() === 'completed').length;
   const cancelledCount = appointments.filter(a => a.status.toLowerCase() === 'cancelled').length;
+
+  // Cancel an appointment (confirmation dialog then remove row)
+  const handleCancel = (appointmentId: string) => {
+    const confirmed = window.confirm('Are you sure you want to cancel this appointment?');
+    if (!confirmed) return;
+
+    setAppointments(prev => prev.filter(a => a.id !== appointmentId));
+    // Simple notification - replace with toast later
+    window.alert('Appointment cancelled');
+  };
+
+  // Delete a completed appointment (only available in Completed tab)
+  const handleDelete = (appointmentId: string) => {
+    const confirmed = window.confirm('Delete this completed appointment? This action cannot be undone.');
+    if (!confirmed) return;
+
+    setAppointments(prev => prev.filter(a => a.id !== appointmentId));
+    window.alert('Appointment deleted');
+  };
 
   if (loading) {
     return (
@@ -251,7 +270,7 @@ export default function MyAppointments() {
                         {appointment.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-4">
                       <button
                         onClick={() => alert('View appointment details')}
                         className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
@@ -259,6 +278,26 @@ export default function MyAppointments() {
                         <Eye className="w-4 h-4" />
                         View
                       </button>
+
+                      {/* Show Cancel button for non-completed/non-cancelled appointments */}
+                      {appointment.status.toLowerCase() !== 'completed' && appointment.status.toLowerCase() !== 'cancelled' && (
+                        <button
+                          onClick={() => handleCancel(appointment.id)}
+                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                        >
+                          Cancel
+                        </button>
+                      )}
+
+                      {/* Show Delete only when viewing the Completed tab */}
+                      {activeTab === 'completed' && appointment.status.toLowerCase() === 'completed' && (
+                        <button
+                          onClick={() => handleDelete(appointment.id)}
+                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
