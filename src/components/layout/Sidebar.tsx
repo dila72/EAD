@@ -5,10 +5,12 @@ import { FiMenu, FiLogOut } from "react-icons/fi";
 import { FaCar, FaCalendarAlt, FaProjectDiagram, FaUser, FaComments } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import Link from "next/link";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   return (
     <>
@@ -90,7 +92,10 @@ export default function Sidebar() {
           </Link>
         </nav>
 
-        <button className="mt-auto flex items-center gap-2 p-2 rounded-md text-red-600 text-sm md:text-base lg:text-base hover:bg-red-50 transition-colors">
+        <button 
+          onClick={logout}
+          className="mt-auto flex items-center gap-2 p-2 rounded-md text-red-600 text-sm md:text-base lg:text-base hover:bg-red-50 transition-colors"
+        >
           <FiLogOut size={16} /> Logout
         </button>
       </div>
