@@ -42,6 +42,10 @@ public class Appointment {
     @Column(name = "end_time", nullable = false)
     private String endTime;
 
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AppointmentStatus status;

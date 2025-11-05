@@ -2,10 +2,14 @@ package com.example.ead_backend.mapper;
 
 import com.example.ead_backend.dto.AppointmentDTO;
 import com.example.ead_backend.model.entity.Appointment;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 
 // Fallback manual mapper (not a Spring bean). Kept only to avoid compile issues
 // when MapStruct processing is unavailable. MapStruct will generate the real bean.
-class AppointmentMapperManual implements AppointmentMapper {
+@Primary
+@Component
+public class AppointmentMapperManual implements AppointmentMapper {
 
     @Override
     public AppointmentDTO toDTO(Appointment entity) {

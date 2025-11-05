@@ -2,10 +2,14 @@ package com.example.ead_backend.mapper;
 
 import com.example.ead_backend.dto.ProjectDTO;
 import com.example.ead_backend.model.entity.Project;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 
 // Fallback manual mapper (not a Spring bean). Kept only to avoid compile issues
 // when MapStruct processing is unavailable. MapStruct will generate the real bean.
-class ProjectMapperManual implements ProjectMapper {
+@Primary
+@Component
+public class ProjectMapperManual implements ProjectMapper {
 
     @Override
     public ProjectDTO toDTO(Project entity) {

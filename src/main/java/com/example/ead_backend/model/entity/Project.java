@@ -30,6 +30,10 @@ public class Project {
     @Column(nullable = true)
     private LocalDate endDate;
 
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProjectStatus status;
