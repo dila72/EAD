@@ -1,4 +1,7 @@
+'use client';
+
 import EmployeeSidebar from '@/components/layout/EmployeeSidebar';
+import UserProfileCard from '@/components/layout/UserProfileCard';
 
 export default function EmployeeLayout({
   children,
@@ -9,7 +12,13 @@ export default function EmployeeLayout({
     <div className="flex min-h-screen bg-gray-50">
       <EmployeeSidebar />
       <main className="flex-1 ml-64">
-        {children}
+        {/* Top Bar with User Profile */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-end items-center sticky top-0 z-10">
+          <UserProfileCard useCurrentUser={true} />
+        </div>
+        
+        {/* Main Content */}
+        <div>{children}</div>
       </main>
     </div>
   );

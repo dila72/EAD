@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Calendar, Clock, Car, CheckCircle, XCircle, Plus, Eye } from 'lucide-react';
 import { appointmentService, customerService } from '@/api/mockApiService';
 import type { Appointment, Customer } from '@/types';
 
 export default function MyAppointments() {
+  const router = useRouter();
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
-  const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAllCompleted, setShowAllCompleted] = useState(false);
+  const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
 
   useEffect(() => {
     loadAppointments();
@@ -21,13 +23,9 @@ export default function MyAppointments() {
       const customerData = await customerService.getProfile();
       setCustomer(customerData);
 
-      const [upcoming, completed] = await Promise.all([
-        appointmentService.getUpcomingAppointments(customerData.id),
-        appointmentService.getCompletedAppointments(customerData.id)
-      ]);
-
-      setUpcomingAppointments(upcoming);
-      setCompletedAppointments(completed);
+      // Import mock appointments
+      const { mockAppointments } = await import('@/data/mockData');
+      setAppointments(mockAppointments);
     } catch (error) {
       console.error('Failed to load appointments:', error);
     } finally {
@@ -38,15 +36,43 @@ export default function MyAppointments() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
-      day: '2-digit',
-      month: '2-digit',
+      month: 'short',
+      day: 'numeric',
       year: 'numeric'
     });
   };
 
+  const getStatusBadge = (status: string) => {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'upcoming':
+        return 'bg-blue-100 text-blue-800';
+      case 'in progress':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const filteredAppointments = appointments.filter(apt => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'upcoming') return apt.status.toLowerCase() === 'upcoming';
+    if (activeTab === 'completed') return apt.status.toLowerCase() === 'completed';
+    if (activeTab === 'cancelled') return apt.status.toLowerCase() === 'cancelled';
+    return true;
+  });
+
+  const upcomingCount = appointments.filter(a => a.status.toLowerCase() === 'upcoming').length;
+  const completedCount = appointments.filter(a => a.status.toLowerCase() === 'completed').length;
+  const cancelledCount = appointments.filter(a => a.status.toLowerCase() === 'cancelled').length;
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading appointments...</p>
@@ -56,105 +82,191 @@ export default function MyAppointments() {
   }
 
   return (
-    <>
-      <p className="text-gray-700 text-sm md:text-base">Hello,</p>
-      <h2 className="text-base md:text-lg lg:text-xl font-bold mb-6">Hi {customer?.name}</h2>
+    <div>
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">My Appointments</h1>
+            <p className="text-gray-600">View and manage your service appointments</p>
+          </div>
+          <button
+            onClick={() => router.push('/customer/my-appointments/book')}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Book Appointment
+          </button>
+        </div>
+      </div>
 
-          {/* Stats */}
-          <div className="flex md:grid md:grid-cols-2 gap-6 mb-8 overflow-x-auto scrollbar-hide py-2 -my-2">
-            <div className="bg-white rounded-lg shadow-md p-4 md:p-5 text-center min-w-[160px] md:min-w-0 flex-shrink-0">
-              <p className="text-2xl md:text-3xl font-bold text-green-500">{completedAppointments.length}</p>
-              <p className="text-sm md:text-base text-gray-600 mt-1">Completed</p>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Upcoming</p>
+              <p className="text-3xl font-bold text-blue-600">{upcomingCount}</p>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-4 md:p-5 text-center min-w-[160px] md:min-w-0 flex-shrink-0">
-              <p className="text-2xl md:text-3xl font-bold text-yellow-500">{upcomingAppointments.length}</p>
-              <p className="text-sm md:text-base text-gray-600 mt-1">Upcoming</p>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-blue-600" />
             </div>
           </div>
+        </div>
 
-          {/* Upcoming Appointments */}
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg md:text-xl font-bold">Upcoming Appointments</h3>
-            <button className="bg-orange-400 hover:bg-orange-500 text-white px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-medium transition-colors">+ New</button>
-          </div>
-          
-          {upcomingAppointments.length === 0 ? (
-            <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-8 text-center text-gray-500 text-sm md:text-base">
-              No upcoming appointments
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Completed</p>
+              <p className="text-3xl font-bold text-green-600">{completedCount}</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
-            <table className="w-full text-left text-sm md:text-base">
-              <thead className="bg-gray-100 text-gray-700">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Cancelled</p>
+              <p className="text-3xl font-bold text-red-600">{cancelledCount}</p>
+            </div>
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <XCircle className="w-6 h-6 text-red-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow mb-6">
+        <div className="border-b border-gray-200">
+          <div className="flex overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-6 py-4 font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'all'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              All ({appointments.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('upcoming')}
+              className={`px-6 py-4 font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'upcoming'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Upcoming ({upcomingCount})
+            </button>
+            <button
+              onClick={() => setActiveTab('completed')}
+              className={`px-6 py-4 font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'completed'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Completed ({completedCount})
+            </button>
+            <button
+              onClick={() => setActiveTab('cancelled')}
+              className={`px-6 py-4 font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'cancelled'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Cancelled ({cancelledCount})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Appointments List */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Service
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Vehicle
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date & Time
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredAppointments.length === 0 ? (
                 <tr>
-                  <th className="p-4 font-semibold">ID</th>
-                  <th className="p-4 font-semibold">Service</th>
-                  <th className="p-4 font-semibold">Vehicle</th>
-                  <th className="p-4 font-semibold">Date</th>
-                  <th className="p-4 font-semibold">Time</th>
-                  <th className="p-4 font-semibold">Status</th>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    {activeTab === 'all' && 'No appointments found'}
+                    {activeTab === 'upcoming' && 'No upcoming appointments'}
+                    {activeTab === 'completed' && 'No completed appointments'}
+                    {activeTab === 'cancelled' && 'No cancelled appointments'}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {upcomingAppointments.map((appointment) => (
-                  <tr key={appointment.id} className="border-t hover:bg-gray-50 transition-colors">
-                    <td className="p-3 md:p-4">{appointment.id}</td>
-                    <td className="p-3 md:p-4">{appointment.serviceName}</td>
-                    <td className="p-3 md:p-4">{appointment.vehicleNumber}</td>
-                    <td className="p-3 md:p-4">{formatDate(appointment.date)}</td>
-                    <td className="p-3 md:p-4">{appointment.time}</td>
-                    <td className="p-3 md:p-4 text-orange-500 font-semibold">{appointment.status}</td>
+              ) : (
+                filteredAppointments.map((appointment) => (
+                  <tr key={appointment.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {appointment.serviceName}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-900">
+                        <Car className="w-4 h-4 text-gray-400" />
+                        {appointment.vehicleNumber}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          {formatDate(appointment.date)}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 text-gray-600">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          {appointment.time}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(appointment.status)}`}>
+                        {appointment.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => alert('View appointment details')}
+                        className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View
+                      </button>
+                    </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-          {/* Completed */}
-          <h3 className="text-lg font-bold mb-3 lg:text-xl ">Completed Appointments</h3>
-          {completedAppointments.length === 0 ? (
-            <div className="bg-gray-100 rounded-lg p-4 text-center text-gray-500 text-base">
-              No completed appointments yet
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
-                <table className="w-full text-left text-base">
-                  <thead className="bg-gray-100 text-gray-700">
-                    <tr>
-                      <th className="p-4 font-semibold">ID</th>
-                      <th className="p-4 font-semibold">Service</th>
-                      <th className="p-4 font-semibold">Vehicle</th>
-                      <th className="p-4 font-semibold">Date</th>
-                      <th className="p-4 font-semibold">Time</th>
-                      <th className="p-4 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(showAllCompleted ? completedAppointments : completedAppointments.slice(0, 5)).map((appointment) => (
-                      <tr key={appointment.id} className="border-t hover:bg-gray-50 transition-colors">
-                        <td className="p-4">{appointment.id}</td>
-                        <td className="p-4">{appointment.serviceName}</td>
-                        <td className="p-4">{appointment.vehicleNumber}</td>
-                        <td className="p-4">{formatDate(appointment.date)}</td>
-                        <td className="p-4">{appointment.time}</td>
-                        <td className="p-4 text-green-600 font-semibold">{appointment.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {completedAppointments.length > 5 && (
-                <button
-                  onClick={() => setShowAllCompleted(!showAllCompleted)}
-                  className="mt-3 text-blue-600 hover:text-blue-800 text-sm md:text-base font-medium transition-colors"
-                >
-                  {showAllCompleted ? 'Show less...' : `Show more... (${completedAppointments.length - 5} more)`}
-                </button>
+                ))
               )}
-            </>
-          )}
-    </>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }

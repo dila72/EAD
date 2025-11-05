@@ -55,7 +55,7 @@ export interface Project {
   estimatedEndDate?: string;
   completedDate?: string;
   time: string;
-  status: 'Ongoing' | 'Completed' | 'Cancelled';
+  status: 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled';
   assignedEmployee?: string;
   approvedBy?: string;
   estimatedCost?: number;

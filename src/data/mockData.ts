@@ -43,7 +43,7 @@ export const mockAppointments: Appointment[] = [
     date: '2025-11-12',
     time: '11:00 AM - 12:00 PM',
     status: 'Upcoming',
-    assignedEmployee: 'Mike Johnson',
+    assignedEmployee: undefined,
     approvedBy: 'Admin Sarah'
   },
   {
@@ -55,7 +55,7 @@ export const mockAppointments: Appointment[] = [
     date: '2025-11-15',
     time: '02:00 PM - 03:00 PM',
     status: 'Upcoming',
-    assignedEmployee: 'David Smith'
+    assignedEmployee: undefined
   },
   {
     id: 'APT003',
@@ -119,12 +119,28 @@ export const mockProjects: Project[] = [
     vehicleType: 'Car',
     taskName: 'Modify Body',
     description: 'Custom body kit installation',
-    startDate: '2025-10-25',
+    startDate: '2025-11-15',
     time: '08:00 AM - 06:00 PM',
-    status: 'Ongoing',
-    assignedEmployee: 'James Miller',
+    status: 'Pending',
+    assignedEmployee: undefined,
     approvedBy: 'Admin John',
-    estimatedCost: 2500
+    estimatedCost: 2500,
+    notes: 'Awaiting employee assignment'
+  },
+  {
+    id: 'PRJ006',
+    customerId: 'CUST001',
+    vehicleId: 'VEH003',
+    vehicleNumber: 'XYZ-7890',
+    vehicleType: 'SUV',
+    taskName: 'Paint Job',
+    description: 'Full body paint - Metallic Blue',
+    startDate: '2025-11-20',
+    time: '08:00 AM - 06:00 PM',
+    status: 'Pending',
+    assignedEmployee: undefined,
+    estimatedCost: 1500,
+    notes: 'Customer requested specific color code'
   },
   {
     id: 'PRJ003',
