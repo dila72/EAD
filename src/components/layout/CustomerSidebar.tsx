@@ -22,6 +22,11 @@ export default function CustomerSidebar() {
       label: 'Dashboard',
     },
     {
+      href: '/customer/services',
+      icon: Wrench,
+      label: 'Services',
+    },
+    {
       href: '/customer/my-appointments',
       icon: Calendar,
       label: 'My Appointments',
