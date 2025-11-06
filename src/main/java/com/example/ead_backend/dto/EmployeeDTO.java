@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class EmployeeDTO implements Serializable {
-    private String employeeId;
-    private String name;
+    private Long id;
+    private String firstName;
+    private String lastName;
     private String email;
-    private String password;
-    private String specialization;
+    private String role;
     private LocalDate joinedDate;
 }

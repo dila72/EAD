@@ -46,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/appointments/availability").permitAll()
                         // All other appointment endpoints require authentication
                         .requestMatchers("/api/appointments/**").authenticated()
-                        .requestMatchers("/api/projects/**").permitAll()
+                        .requestMatchers("/api/projects/**").authenticated()
                         .requestMatchers("/api/password/forgot", "/api/password/verify-otp", "/api/password/reset")
                         .permitAll()
                         .requestMatchers("/api/password/change").authenticated()
