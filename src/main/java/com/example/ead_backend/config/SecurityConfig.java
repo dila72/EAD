@@ -41,7 +41,10 @@ public class SecurityConfig {
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/appointments/**").permitAll()
+                        // Allow public access only to appointment availability endpoint
+                        .requestMatchers("/api/appointments/availability").permitAll()
+                        // All other appointment endpoints require authentication
+                        .requestMatchers("/api/appointments/**").authenticated()
                         .requestMatchers("/api/projects/**").permitAll()
                         .requestMatchers("/api/password/forgot", "/api/password/verify-otp", "/api/password/reset").permitAll()
                         .requestMatchers("/api/password/change").authenticated()
