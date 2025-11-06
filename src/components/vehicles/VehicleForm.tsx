@@ -9,7 +9,8 @@ export interface NewVehicleInput {
 	registrationDate: string; // ISO date
 	licensePlate: string;
 	year: number | '';
-	image?: string | null; // data URL
+	imageFile?: File | null; // Actual file object for upload
+	imagePreview?: string | null; // data URL for preview
 }
 
 export default function VehicleForm({
@@ -28,11 +29,12 @@ export default function VehicleForm({
 		registrationDate: initial?.registrationDate || "",
 		licensePlate: initial?.licensePlate || "",
 		year: (initial?.year as number) || "",
-		image: initial?.image ?? null,
+		imageFile: initial?.imageFile ?? null,
+		imagePreview: initial?.imagePreview ?? null,
 	});
 
 	const [imagePreview, setImagePreview] = useState<string | null>(
-		initial?.image || null
+		initial?.imagePreview || null
 	);
 
 	const handleChange = (
@@ -45,11 +47,16 @@ export default function VehicleForm({
 	const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		
+		// Store the actual file object for upload
+		setForm((s) => ({ ...s, imageFile: file }));
+		
+		// Create preview
 		const reader = new FileReader();
 		reader.onload = () => {
 			const result = reader.result as string;
 			setImagePreview(result);
-			setForm((s) => ({ ...s, image: result }));
+			setForm((s) => ({ ...s, imagePreview: result }));
 		};
 		reader.readAsDataURL(file);
 	};
@@ -141,11 +148,11 @@ export default function VehicleForm({
 			</div>
 
 			<div className="flex items-center gap-3">
-				<button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-					Add vehicle
+				<button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+					{initial ? 'Update Vehicle' : 'Add Vehicle'}
 				</button>
 				{onCancel && (
-					<button type="button" onClick={onCancel} className="px-4 py-2 rounded border">
+					<button type="button" onClick={onCancel} className="px-4 py-2 rounded border hover:bg-gray-50">
 						Cancel
 					</button>
 				)}

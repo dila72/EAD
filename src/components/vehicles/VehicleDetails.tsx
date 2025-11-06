@@ -2,7 +2,13 @@
 
 import React from "react";
 
-export default function VehicleDetails({ vehicle }: { vehicle: any | null }) {
+interface VehicleDetailsProps {
+	vehicle: any | null;
+	onEdit?: (vehicle: any) => void;
+	onDelete?: (vehicleId: number) => void;
+}
+
+export default function VehicleDetails({ vehicle, onEdit, onDelete }: VehicleDetailsProps) {
 	if (!vehicle) {
 		return (
 			<div className="bg-white rounded-lg shadow p-6">
@@ -16,10 +22,10 @@ export default function VehicleDetails({ vehicle }: { vehicle: any | null }) {
 			<div className="flex flex-col md:flex-row">
 				{/* Image Section */}
 				<div className="relative md:w-1/2 bg-gray-100 p-6 flex items-center justify-center">
-					{vehicle.image ? (
+					{(vehicle.imageUrl || vehicle.image) ? (
 						// eslint-disable-next-line @next/next/no-img-element
 						<img 
-							src={vehicle.image} 
+							src={vehicle.imageUrl || vehicle.image} 
 							alt={vehicle.model || vehicle.licensePlate} 
 							className="w-full h-auto max-h-96 object-contain rounded-lg" 
 						/>
@@ -53,12 +59,6 @@ export default function VehicleDetails({ vehicle }: { vehicle: any | null }) {
 					)}
 
 					<div className="space-y-3">
-						<div className="flex justify-between py-2 border-b border-gray-100">
-							<span className="text-gray-600">Advertisement number</span>
-							<span className="font-medium text-gray-900">
-								{vehicle.id || vehicle.vin || '-'}
-							</span>
-						</div>
 						
 						<div className="flex justify-between py-2 border-b border-gray-100">
 							<span className="text-gray-600">Year</span>
@@ -83,19 +83,40 @@ export default function VehicleDetails({ vehicle }: { vehicle: any | null }) {
 						</div>
 
 						<div className="flex justify-between py-2 border-b border-gray-100">
-							<span className="text-gray-600">Advertised on</span>
+							<span className="text-gray-600">Registration Date</span>
 							<span className="font-medium text-gray-900">
 								{vehicle.registrationDate || '-'}
 							</span>
 						</div>
 
-						<div className="flex justify-between py-2">
-							<span className="text-gray-600">Previous sale</span>
-							<span className="font-medium text-gray-900">
-								{vehicle.previousSale || 'As open as possible'}
-							</span>
-						</div>
+						
 					</div>
+
+					{/* Action Buttons */}
+					{(onEdit || onDelete) && (
+						<div className="mt-6 flex gap-3">
+							{onEdit && (
+								<button
+									onClick={() => onEdit(vehicle)}
+									className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+								>
+									Edit Vehicle
+								</button>
+							)}
+							{onDelete && (
+								<button
+									onClick={() => {
+										if (window.confirm('Are you sure you want to delete this vehicle?')) {
+											onDelete(vehicle.id);
+										}
+									}}
+									className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+								>
+									Delete Vehicle
+								</button>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
