@@ -44,4 +44,11 @@ export const adminService = {
   getAllProjects: async () => {
     return await api.get('/admin/projects');
   },
+
+  // Assign employee to project
+  assignEmployeeToProject: async (projectId: string, employeeId: number) => {
+    return await api.put(`/projects/${projectId}/assign-employee`, {
+      employeeId
+    });
+  },
 };

@@ -30,6 +30,23 @@ export const employeeService = {
     return await api.get<Appointment[]>(`/employee/appointments/${status}`);
   },
 
+  // Get all projects assigned to the logged-in employee
+  getMyProjects: async (): Promise<any[]> => {
+    const data = await api.get<any[]>('/employee/projects');
+    // Transform backend ProjectDTO to frontend format
+    return data.map((proj: any) => ({
+      id: proj.projectId,
+      customerId: proj.customerId,
+      taskName: proj.name,
+      description: proj.description,
+      startDate: proj.startDate,
+      completedDate: proj.endDate,
+      status: proj.status,
+      assignedEmployee: proj.employee ? `${proj.employee.firstName} ${proj.employee.lastName}` : undefined,
+      type: 'project' // Add type to differentiate from appointments
+    }));
+  },
+
   // Update appointment status (uses existing appointment update endpoint)
   updateAppointmentStatus: async (appointmentId: string, status: string): Promise<Appointment> => {
     return await api.put<Appointment>(`/appointments/${appointmentId}`, { status });

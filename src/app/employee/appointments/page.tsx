@@ -12,6 +12,7 @@ interface UpdateModalState {
 
 export default function EmployeeAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updateModal, setUpdateModal] = useState<UpdateModalState>({
@@ -27,18 +28,22 @@ export default function EmployeeAppointmentsPage() {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    fetchAppointments();
+    fetchData();
   }, []);
 
-  const fetchAppointments = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await employeeService.getMyAppointments();
-      setAppointments(data);
+      const [appointmentsData, projectsData] = await Promise.all([
+        employeeService.getMyAppointments(),
+        employeeService.getMyProjects()
+      ]);
+      setAppointments(appointmentsData);
+      setProjects(projectsData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError('Failed to load appointments. Please try again later.');
+      setError('Failed to load data. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -84,7 +89,7 @@ export default function EmployeeAppointmentsPage() {
       }
 
       // Refresh appointments
-      await fetchAppointments();
+      await fetchData();
       closeUpdateModal();
     } catch (error) {
       console.error('Error updating appointment:', error);
@@ -127,8 +132,8 @@ export default function EmployeeAppointmentsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">My Appointments</h1>
-        <p className="text-gray-600">View and manage your assigned appointments</p>
+        <h1 className="text-2xl font-bold mb-2">My Appointments & Projects</h1>
+        <p className="text-gray-600">View and manage your assigned appointments and projects</p>
       </div>
 
       {error && (
@@ -137,58 +142,108 @@ export default function EmployeeAppointmentsPage() {
         </div>
       )}
 
-      {/* Appointments List */}
+      {/* Appointments and Projects List */}
       <div>
-        {appointments.length === 0 ? (
+        {appointments.length === 0 && projects.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
             <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">No Appointments</h3>
-            <p className="text-gray-600">You don't have any assigned appointments at the moment.</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">No Assignments</h3>
+            <p className="text-gray-600">You don't have any assigned appointments or projects at the moment.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {appointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">
-                      {appointment.serviceName}
-                    </h3>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(appointment.status)}`}>
-                      {appointment.status || 'PENDING'}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => openUpdateModal(appointment)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Update Status"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-                </div>
+          <>
+            {/* Appointments Section */}
+            {appointments.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-bold mb-4 text-gray-800">Appointments</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {appointments.map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+                    >
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-gray-800 mb-1">
+                            {appointment.serviceName}
+                          </h3>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(appointment.status)}`}>
+                            {appointment.status || 'PENDING'}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => openUpdateModal(appointment)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Update Status"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                      </div>
 
-                {/* Appointment Info */}
-                <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <Calendar className="w-4 h-4 text-gray-500" />
-                    <span className="font-medium">{appointment.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Clock className="w-4 h-4 text-gray-500" />
-                    <span>{appointment.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <User className="w-4 h-4 text-gray-500" />
-                    <span>Vehicle: {appointment.vehicleNumber}</span>
-                  </div>
+                      {/* Appointment Info */}
+                      <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Calendar className="w-4 h-4 text-gray-500" />
+                          <span className="font-medium">{appointment.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="w-4 h-4 text-gray-500" />
+                          <span>{appointment.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <User className="w-4 h-4 text-gray-500" />
+                          <span>Vehicle: {appointment.vehicleNumber}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+
+            {/* Projects Section */}
+            {projects.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold mb-4 text-gray-800">Projects</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {projects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+                    >
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-gray-800 mb-1">
+                            {project.taskName}
+                          </h3>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(project.status)}`}>
+                            {project.status || 'PLANNED'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Project Info */}
+                      <div className="space-y-2 mb-4">
+                        <p className="text-sm text-gray-600">{project.description}</p>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Calendar className="w-4 h-4 text-gray-500" />
+                          <span className="font-medium">Start: {project.startDate}</span>
+                        </div>
+                        {project.completedDate && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Clock className="w-4 h-4 text-gray-500" />
+                            <span>End: {project.completedDate}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

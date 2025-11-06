@@ -29,6 +29,18 @@ export default function AdminProjectsPage() {
         const projectsData = await adminService.getAllProjects();
         const employeesData = await adminService.getAllEmployees();
         
+        // Transform backend employee data to match frontend interface
+        const transformedEmployees = employeesData.map((emp: any) => ({
+          id: emp.id,
+          name: `${emp.firstName} ${emp.lastName}`,
+          position: emp.role,
+          isAvailable: true, // Default to available
+          currentProjects: 0, // Default to 0
+        }));
+
+        // Create a map of employee IDs to names for quick lookup
+        const employeeMap = new Map(transformedEmployees.map(emp => [emp.id, emp.name]));
+        
         // Transform backend project data to match frontend interface
         const transformedProjects = projectsData.map((proj: any) => ({
           id: proj.projectId,
@@ -41,16 +53,7 @@ export default function AdminProjectsPage() {
           status: proj.status,
           estimatedCost: null, // Not available in backend DTO
           notes: '', // Not available in backend DTO
-          assignedEmployee: null, // Will be populated if needed
-        }));
-
-        // Transform backend employee data to match frontend interface
-        const transformedEmployees = employeesData.map((emp: any) => ({
-          id: emp.id,
-          name: `${emp.firstName} ${emp.lastName}`,
-          position: emp.role,
-          isAvailable: true, // Default to available
-          currentProjects: 0, // Default to 0
+          assignedEmployee: proj.employee ? employeeMap.get(proj.employee.id) || null : null, // Get employee name if assigned
         }));
 
         setProjects(transformedProjects);
@@ -106,20 +109,46 @@ export default function AdminProjectsPage() {
     setShowAssignModal(true);
   };
 
-  const handleAssignEmployee = () => {
+  const handleAssignEmployee = async () => {
     if (!selectedEmployee || !selectedProject) {
       alert('Please select an employee');
       return;
     }
 
-    // Only update the project with assigned employee - NO automatic availability updates
-    setProjects(projects.map(proj =>
-      proj.id === selectedProject.id
-        ? { ...proj, assignedEmployee: selectedEmployee }
-        : proj
-    ));
+    try {
+      const { adminService } = await import('@/lib/adminService');
+      await adminService.assignEmployeeToProject(
+        selectedProject.id,
+        Number(selectedEmployee)
+      );
 
-    alert(`Employee ${selectedEmployee} has been assigned successfully!`);
+      // Refresh the projects list to show the updated assignment
+      const projectsData = await adminService.getAllProjects();
+      
+      // Create a map of employee IDs to names for quick lookup
+      const employeeMap = new Map(employees.map(emp => [emp.id, emp.name]));
+      
+      const transformedProjects = projectsData.map((proj: any) => ({
+        id: proj.projectId,
+        taskName: proj.name,
+        description: proj.description || '',
+        vehicleNumber: '',
+        vehicleType: '',
+        startDate: proj.startDate,
+        completedDate: proj.endDate,
+        status: proj.status,
+        estimatedCost: null,
+        notes: '',
+        assignedEmployee: proj.employee ? employeeMap.get(proj.employee.id) || null : null,
+      }));
+      
+      setProjects(transformedProjects);
+
+      alert(`Employee has been assigned successfully!`);
+    } catch (error) {
+      console.error('Error assigning employee:', error);
+      alert('Failed to assign employee. Please try again.');
+    }
 
     setShowAssignModal(false);
     setSelectedProject(null);
@@ -353,9 +382,9 @@ export default function AdminProjectsPage() {
                   {employees.map((employee) => (
                     <div
                       key={employee.id}
-                      onClick={() => employee.isAvailable && setSelectedEmployee(employee.name)}
+                      onClick={() => employee.isAvailable && setSelectedEmployee(employee.id.toString())}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedEmployee === employee.name
+                        selectedEmployee === employee.id.toString()
                           ? 'border-blue-500 bg-blue-50'
                           : employee.isAvailable
                           ? 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'

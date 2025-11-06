@@ -384,12 +384,32 @@ export default function EmployeeProgressPage() {
   const fetchAppointments = async () => {
     try {
       setError(null);
-      const data = await getEmployeeAppointments();
-      const transformedData = data.map(transformAppointment);
-      setAppointments(transformedData);
+      const [appointmentsData, projectsData] = await Promise.all([
+        getEmployeeAppointments(),
+        (await import('@/lib/employeeService')).employeeService.getMyProjects()
+      ]);
+      const transformedAppointments = appointmentsData.map(transformAppointment);
+      
+      // Transform projects to appointment progress format
+      const transformedProjects = projectsData.map((proj: any) => ({
+        appointmentId: typeof proj.id === 'string' ? parseInt(proj.id) : proj.id,
+        serviceName: proj.taskName || 'Project',
+        location: 'On-site',
+        customerName: 'Customer',
+        tag: 'Project',
+        progressPercentage: 0,
+        hoursLogged: 0,
+        estimatedHours: 40,
+        status: (proj.status?.toLowerCase() || 'planned') as any,
+        timerRunning: false,
+        latestRemarks: proj.description || '',
+      }));
+      
+      // Combine both
+      setAppointments([...transformedAppointments, ...transformedProjects]);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch appointments';
-      console.error('Error fetching appointments:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data';
+      console.error('Error fetching data:', err);
       setError(errorMessage);
     } finally {
       setLoading(false);
