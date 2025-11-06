@@ -12,18 +12,30 @@ export const getAuthToken = (): string | null => {
 // Create single axios instance with default config
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Don't set default Content-Type here - let it be set per request
 });
 
-// Request interceptor to add token
+// Request interceptor to add token and handle Content-Type
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Only set Content-Type to application/json if it's not already set
+    // This allows multipart/form-data requests to work properly
+    if (!config.headers['Content-Type']) {
+      // Check if data is FormData
+      if (config.data instanceof FormData) {
+        // Don't set Content-Type for FormData - browser will set it with boundary
+        delete config.headers['Content-Type'];
+      } else {
+        // Set to application/json for regular requests
+        config.headers['Content-Type'] = 'application/json';
+      }
+    }
+    
     return config;
   },
   (error) => {

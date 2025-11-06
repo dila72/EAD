@@ -1,80 +1,155 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { vehicleService, customerService } from "@/api/mockApiService";
 import VehicleList from "@/components/vehicles/VehicleList";
 import VehicleDetails from "@/components/vehicles/VehicleDetails";
 import VehicleForm, { NewVehicleInput } from "@/components/vehicles/VehicleForm";
-
-interface VehicleFull {
-  id: string;
-  customerId: string;
-  model?: string;
-  color?: string;
-  vin?: string;
-  registrationDate?: string;
-  licensePlate?: string;
-  year?: number | string;
-  image?: string | null;
-}
+import { vehicleApi } from "@/lib/vehicleApi";
+import { Vehicle } from "@/types/vehicle.types";
+import { debugImageUpload } from "@/lib/debugImageUpload";
 
 export default function MyVehiclesPage() {
-  const [vehicles, setVehicles] = useState<VehicleFull[]>([]);
-  const [selected, setSelected] = useState<VehicleFull | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [selected, setSelected] = useState<Vehicle | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Load all vehicles on mount
   useEffect(() => {
-    let mounted = true;
-
-    async function load() {
-      try {
-        const customer = await customerService.getProfile();
-        const list = await vehicleService.getCustomerVehicles(customer.id);
-        if (!mounted) return;
-        // normalize to VehicleFull
-        const normalized = list.map((v: any) => ({
-          id: v.id,
-          customerId: v.customerId,
-          model: `${v.make || ''} ${v.model || ''}`.trim(),
-          licensePlate: v.vehicleNumber,
-          year: v.year,
-          image: null,
-        }));
-        setVehicles(normalized);
-        if (normalized.length) setSelected(normalized[0]);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    load();
-    return () => { mounted = false; };
+    loadVehicles();
   }, []);
 
-  const handleAddClick = () => setShowForm(true);
+  const loadVehicles = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await vehicleApi.getAllVehicles();
+      setVehicles(data);
+      if (data.length > 0 && !selected) {
+        setSelected(data[0]);
+      }
+    } catch (err: any) {
+      console.error("Failed to load vehicles:", err);
+      setError(err.response?.data?.message || "Failed to load vehicles");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleAdd = (input: NewVehicleInput) => {
-    const newVehicle: VehicleFull = {
-      id: `V-${Date.now()}`,
-      customerId: "CUST001",
-      model: input.model,
-      color: input.color,
-      vin: input.vin,
-      registrationDate: input.registrationDate,
-      licensePlate: input.licensePlate,
-      year: input.year,
-      image: input.image || null,
-    };
-    setVehicles((s) => [newVehicle, ...s]);
-    setSelected(newVehicle);
-    setShowForm(false);
+  const handleAddClick = () => {
+    setEditingVehicle(null);
+    setShowForm(true);
+  };
+
+  const handleEditClick = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (input: NewVehicleInput) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const vehicleData = {
+        model: input.model,
+        color: input.color,
+        vin: input.vin,
+        licensePlate: input.licensePlate,
+        year: Number(input.year),
+        registrationDate: input.registrationDate,
+      };
+
+      let savedVehicle: Vehicle;
+
+      if (editingVehicle) {
+        // Update existing vehicle
+        if (input.imageFile) {
+          savedVehicle = await vehicleApi.updateVehicleWithImage(
+            editingVehicle.id,
+            vehicleData,
+            input.imageFile
+          );
+        } else {
+          savedVehicle = await vehicleApi.updateVehicle(editingVehicle.id, vehicleData);
+        }
+        
+        // Update the vehicle in the list
+        setVehicles((prev) =>
+          prev.map((v) => (v.id === savedVehicle.id ? savedVehicle : v))
+        );
+      } else {
+        // Create new vehicle
+        if (input.imageFile) {
+          savedVehicle = await vehicleApi.createVehicleWithImage(vehicleData, input.imageFile);
+        } else {
+          savedVehicle = await vehicleApi.createVehicle(vehicleData);
+        }
+        
+        // Add to the beginning of the list
+        setVehicles((prev) => [savedVehicle, ...prev]);
+      }
+
+      setSelected(savedVehicle);
+      setShowForm(false);
+      setEditingVehicle(null);
+    } catch (err: any) {
+      console.error("Failed to save vehicle:", err);
+      setError(err.response?.data?.message || "Failed to save vehicle");
+      alert(`Error: ${err.response?.data?.message || "Failed to save vehicle"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (vehicleId: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await vehicleApi.deleteVehicle(vehicleId);
+      
+      // Remove from list
+      setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
+      
+      // Clear selection if deleted vehicle was selected
+      if (selected?.id === vehicleId) {
+        const remaining = vehicles.filter((v) => v.id !== vehicleId);
+        setSelected(remaining.length > 0 ? remaining[0] : null);
+      }
+      
+      alert("Vehicle deleted successfully");
+    } catch (err: any) {
+      console.error("Failed to delete vehicle:", err);
+      setError(err.response?.data?.message || "Failed to delete vehicle");
+      alert(`Error: ${err.response?.data?.message || "Failed to delete vehicle"}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">My Vehicles</h2>
+      <div className="mb-6 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-semibold">My Vehicles</h2>
+          {/* Debug button - Remove after testing */}
+          <button
+            onClick={debugImageUpload}
+            className="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700"
+            title="Test image upload with detailed console logging"
+          >
+            🐛 Debug Upload
+          </button>
+        </div>
+        {error && (
+          <div className="text-red-600 text-sm">{error}</div>
+        )}
       </div>
+
+      {loading && <div className="text-center py-4">Loading...</div>}
 
       <div className="mb-6">
         <VehicleList vehicles={vehicles} onSelect={setSelected} onAdd={handleAddClick} />
@@ -83,7 +158,11 @@ export default function MyVehiclesPage() {
       <div className="border-t pt-6 space-y-6">
         <div className=" gap-6">
           <div className="lg:col-span-1">
-            <VehicleDetails vehicle={selected} />
+            <VehicleDetails 
+              vehicle={selected} 
+              onEdit={handleEditClick}
+              onDelete={handleDelete}
+            />
           </div>
           <div className="lg:col-span-2">
             
@@ -93,12 +172,37 @@ export default function MyVehiclesPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded shadow-lg w-full max-w-2xl p-6">
+          <div className="bg-white rounded shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-medium">Add vehicle</h4>
-              <button onClick={() => setShowForm(false)} className="text-gray-500">Close</button>
+              <h4 className="text-lg font-medium">
+                {editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}
+              </h4>
+              <button 
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingVehicle(null);
+                }} 
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
             </div>
-            <VehicleForm onSubmit={handleAdd} onCancel={() => setShowForm(false)} />
+            <VehicleForm 
+              initial={editingVehicle ? {
+                model: editingVehicle.model,
+                color: editingVehicle.color,
+                vin: editingVehicle.vin,
+                licensePlate: editingVehicle.licensePlate,
+                year: editingVehicle.year,
+                registrationDate: editingVehicle.registrationDate,
+                imagePreview: editingVehicle.imageUrl,
+              } : undefined}
+              onSubmit={handleSubmit} 
+              onCancel={() => {
+                setShowForm(false);
+                setEditingVehicle(null);
+              }} 
+            />
           </div>
         </div>
       )}
