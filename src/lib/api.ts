@@ -2,6 +2,8 @@
  * API Module for Employee Operations
  */
 
+import api from './apiClient';
+
 export interface Appointment {
   id: string | number;
   customerId?: string;
@@ -23,73 +25,95 @@ export interface Appointment {
   timerRunning?: boolean;
 }
 
-// Simulate network delay
-const delay = (ms: number = 300) => new Promise(resolve => setTimeout(resolve, ms));
-
 /**
  * Get appointments assigned to employee
  */
 export async function getEmployeeAppointments(employeeId?: string): Promise<Appointment[]> {
-  await delay();
-  // Mock data - replace with actual API call
-  return [
-    {
-      id: 1,
-      serviceName: 'Oil Change',
-      location: 'Bay 1',
-      customerName: 'John Doe',
+  try {
+    const data = await api.get<any[]>('/employee/appointments');
+    // Transform backend AppointmentDTO to frontend Appointment
+    return data.map((apt: any) => ({
+      id: apt.appointmentId,
+      customerId: apt.customerId,
+      vehicleId: apt.vehicleId,
+      vehicleNumber: apt.vehicleNo,
+      serviceName: apt.service,
+      date: apt.date,
+      time: apt.startTime,
+      status: apt.status,
+      assignedEmployee: apt.employee ? `${apt.employee.firstName} ${apt.employee.lastName}` : undefined,
       type: 'Appointment',
-      progressPercentage: 25,
-      actualHours: 0.5,
+      progressPercentage: 0,
+      actualHours: 0,
       estimatedHours: 2,
-      status: 'in progress',
       timerRunning: false,
-      notes: 'Regular maintenance check',
-    },
-    {
-      id: 2,
-      serviceName: 'Brake Inspection',
-      location: 'Bay 2',
-      customerName: 'Jane Smith',
-      type: 'Project',
-      progressPercentage: 60,
-      actualHours: 1.5,
-      estimatedHours: 3,
-      status: 'in progress',
-      timerRunning: false,
-      notes: 'Front brake pads need replacement',
-    }
-  ];
+      notes: '',
+      location: 'Workshop',
+      customerName: apt.customerName || 'Customer'
+    }));
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    throw error;
+  }
 }
 
 /**
  * Start timer for an appointment
  */
 export async function startTimer(appointmentId: string | number): Promise<void> {
-  await delay();
-  console.log('Timer started for appointment:', appointmentId);
+  try {
+    // This would be an endpoint to start tracking time
+    console.log('Timer started for appointment:', appointmentId);
+    // await api.post(`/employee/appointments/${appointmentId}/start-timer`);
+  } catch (error) {
+    console.error('Error starting timer:', error);
+    throw error;
+  }
 }
 
 /**
  * Pause timer for an appointment
  */
 export async function pauseTimer(appointmentId: string | number): Promise<void> {
-  await delay();
-  console.log('Timer paused for appointment:', appointmentId);
+  try {
+    // This would be an endpoint to pause tracking time
+    console.log('Timer paused for appointment:', appointmentId);
+    // await api.post(`/employee/appointments/${appointmentId}/pause-timer`);
+  } catch (error) {
+    console.error('Error pausing timer:', error);
+    throw error;
+  }
 }
 
 /**
  * Log time for an appointment
  */
 export async function logTime(appointmentId: string | number, timeData: any): Promise<void> {
-  await delay();
-  console.log('Time logged for appointment:', appointmentId, timeData);
+  try {
+    // This would be an endpoint to log time
+    console.log('Time logged for appointment:', appointmentId, timeData);
+    // await api.post(`/employee/appointments/${appointmentId}/log-time`, timeData);
+  } catch (error) {
+    console.error('Error logging time:', error);
+    throw error;
+  }
 }
 
 /**
  * Update appointment progress
  */
 export async function updateProgress(appointmentId: string | number, progressData: any): Promise<void> {
-  await delay();
-  console.log('Progress updated for appointment:', appointmentId, progressData);
+  try {
+    console.log('Updating progress for appointment:', appointmentId, 'with data:', progressData);
+    const requestData = {
+      stage: progressData.stage || 'in progress',
+      percentage: parseInt(progressData.percentage?.toString() || '0'),
+      remarks: progressData.remarks || ''
+    };
+    console.log('Sending request:', requestData);
+    await api.put(`/employee/progress/${appointmentId}`, requestData);
+  } catch (error) {
+    console.error('Error updating progress:', error);
+    throw error;
+  }
 }

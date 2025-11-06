@@ -67,9 +67,23 @@ export const appointmentService = {
 
   // Cancel an appointment
   cancelAppointment: async (appointmentId: string): Promise<Appointment> => {
-    // Use the generic update endpoint to change status to CANCELLED
-    const payload = { status: 'CANCELLED' };
+    // First, get the current appointment details
+    const { data: current } = await axiosInstance.get(`/appointments/${appointmentId}`);
+    
+    // Then update it with CANCELLED status, sending all required fields
+    const payload = {
+      service: current.service,
+      customerId: current.customerId,
+      vehicleId: current.vehicleId,
+      vehicleNo: current.vehicleNo,
+      date: current.date,
+      startTime: current.startTime,
+      endTime: current.endTime,
+      status: 'CANCELLED'
+    };
+    
     const { data: d } = await axiosInstance.put(`/appointments/${appointmentId}`, payload);
+    
     // map to frontend shape
     return {
       id: d.appointmentId || d.id,

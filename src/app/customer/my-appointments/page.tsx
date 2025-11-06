@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Clock, Car, CheckCircle, XCircle, Plus, Eye } from 'lucide-react';
+import { Calendar, Clock, Car, CheckCircle, XCircle, Plus } from 'lucide-react';
 import { appointmentService, type Appointment } from '@/lib/api/appointmentService';
 
 export default function MyAppointments() {
@@ -300,14 +300,6 @@ export default function MyAppointments() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-4">
-                      <button
-                        onClick={() => alert('View appointment details')}
-                        className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                      >
-                        <Eye className="w-4 h-4" />
-                        View
-                      </button>
-
                       {/* Show Cancel button for non-completed/non-cancelled appointments */}
                       {['upcoming', 'pending', 'approved'].includes(appointment.status.toLowerCase()) && (
                         <button

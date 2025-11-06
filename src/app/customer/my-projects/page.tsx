@@ -96,7 +96,7 @@ export default function MyProjects() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading projects...</p>
@@ -107,7 +107,7 @@ export default function MyProjects() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
@@ -123,184 +123,229 @@ export default function MyProjects() {
 
   return (
     <div>
+      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">My Projects</h1>
         <p className="text-gray-600">View and manage your custom service projects</p>
       </div>
 
-          {/* Stats */}
-          <div className="flex md:grid md:grid-cols-2 gap-6 mb-8 overflow-x-auto scrollbar-hide py-2 -my-2">
-            <div className="bg-white rounded-lg shadow-md p-4 md:p-5 text-center min-w-[160px] md:min-w-0 flex-shrink-0">
-              <p className="text-2xl md:text-3xl font-bold text-green-500">{completedProjects.length}</p>
-              <p className="text-sm md:text-base text-gray-600 mt-1">Completed</p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Completed Projects</p>
+              <p className="text-3xl font-bold text-green-600">{completedProjects.length}</p>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-4 md:p-5 text-center min-w-[160px] md:min-w-0 flex-shrink-0">
-              <p className="text-2xl md:text-3xl font-bold text-yellow-500">{ongoingProjects.length}</p>
-              <p className="text-sm md:text-base text-gray-600 mt-1">Ongoing</p>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
           </div>
+        </div>
 
-          {/* Ongoing Projects */}
-          {!showNewForm && (
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg md:text-xl font-bold">Ongoing Projects</h3>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Ongoing Projects</p>
+              <p className="text-3xl font-bold text-yellow-600">{ongoingProjects.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Ongoing Projects Section */}
+      <div className="mb-8">
+        {!showNewForm && (
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Ongoing Projects</h2>
+            <button
+              onClick={() => setShowNewForm(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              + New Project
+            </button>
+          </div>
+        )}
+
+        {showNewForm && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Create New Project</h2>
               <button
-                onClick={() => setShowNewForm(true)}
-                className="bg-orange-400 hover:bg-orange-500 text-white px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-medium transition-colors"
+                onClick={() => setShowNewForm(false)}
+                className="text-gray-500 hover:text-gray-700 font-medium"
               >
-                + New
+                ✕ Close
               </button>
             </div>
-          )}
-
-          {showNewForm && (
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg md:text-xl font-bold">Create New Project</h3>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newName}
+                    onChange={e => setNewName(e.target.value)}
+                    placeholder="Enter project name"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-2">Vehicle Model</label>
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newVehicleModel}
+                    onChange={e => setNewVehicleModel(e.target.value)}
+                    placeholder="e.g., Toyota Camry 2020"
+                  />
+                </div>
+                <div className="flex flex-col md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700 mb-2">Project Description</label>
+                  <textarea
+                    className="border border-gray-300 rounded-lg px-3 py-2 min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newDescription}
+                    onChange={e => setNewDescription(e.target.value)}
+                    placeholder="Describe what kind of project you want"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newStartDate}
+                    onChange={e => setNewStartDate(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={handleCreateProject}
+                  disabled={submitting}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                >
+                  {submitting ? 'Creating...' : 'Create Project'}
+                </button>
                 <button
                   onClick={() => setShowNewForm(false)}
-                  className="text-gray-500 hover:text-gray-700 text-sm font-medium"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors"
                 >
-                  ✕ Close
+                  Cancel
                 </button>
               </div>
-              <div className="bg-white rounded-lg shadow-md p-4 md:p-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-sm text-gray-600 mb-1">Project Name</label>
-                    <input
-                      type="text"
-                      className="border rounded px-3 py-2"
-                      value={newName}
-                      onChange={e => setNewName(e.target.value)}
-                      placeholder="Enter project name"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-sm text-gray-600 mb-1">Vehicle Model</label>
-                    <input
-                      type="text"
-                      className="border rounded px-3 py-2"
-                      value={newVehicleModel}
-                      onChange={e => setNewVehicleModel(e.target.value)}
-                      placeholder="e.g., Toyota Camry 2020"
-                    />
-                  </div>
-                  <div className="flex flex-col md:col-span-2">
-                    <label className="text-sm text-gray-600 mb-1">Project Description</label>
-                    <textarea
-                      className="border rounded px-3 py-2 min-h-[120px]"
-                      value={newDescription}
-                      onChange={e => setNewDescription(e.target.value)}
-                      placeholder="Describe what kind of project you want"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-sm text-gray-600 mb-1">Start Date</label>
-                    <input
-                      type="date"
-                      className="border rounded px-3 py-2"
-                      value={newStartDate}
-                      onChange={e => setNewStartDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="mt-4 flex gap-3">
-                  <button
-                    onClick={handleCreateProject}
-                    disabled={submitting}
-                    className="bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white px-4 py-2 rounded"
-                  >
-                    {submitting ? 'Creating...' : 'Create Project'}
-                  </button>
-                  <button
-                    onClick={() => setShowNewForm(false)}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {!showNewForm && (
-            <>
-              {ongoingProjects.length === 0 ? (
-                <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-6 text-center text-gray-500 text-sm md:text-base">
-                  No ongoing projects
-                </div>
-              ) : (
-                <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
-                <table className="w-full text-left text-sm md:text-base">
-                  <thead className="bg-gray-100 text-gray-700">
-                    <tr>
-                      <th className="p-4 font-semibold">ID</th>
-                      <th className="p-4 font-semibold">Task</th>
-                      <th className="p-4 font-semibold">Vehicle Model</th>
-                      <th className="p-4 font-semibold">Date</th>
-                      <th className="p-4 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ongoingProjects.map((project) => (
-                      <tr key={project.id} className="border-t hover:bg-gray-50 transition-colors">
-                        <td className="p-3 md:p-4">{project.id}</td>
-                        <td className="p-3 md:p-4">{project.taskName}</td>
-                        <td className="p-3 md:p-4">{getVehicleModel(project)}</td>
-                        <td className="p-3 md:p-4">{formatDate(project.startDate)}</td>
-                        <td className="p-3 md:p-4 text-orange-500 font-semibold">{project.status}</td>
+        {!showNewForm && (
+          <>
+            {ongoingProjects.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-8 text-center">
+                <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-gray-600">No ongoing projects</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Model</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {ongoingProjects.map((project) => (
+                        <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 text-sm text-gray-900">{project.id}</td>
+                          <td className="px-6 py-4 text-sm font-medium text-gray-900">{project.taskName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{getVehicleModel(project)}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{formatDate(project.startDate)}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                              {project.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
-            </>
-          )}
+          </>
+        )}
+      </div>
 
-          {/* Completed Projects */}
-          <h3 className="text-lg font-bold mb-3 lg:text-xl ">Completed Projects</h3>
-          {completedProjects.length === 0 ? (
-            <div className="bg-gray-100 rounded-lg p-4 text-center text-gray-500 text-base">
-              No completed projects yet
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
-                <table className="w-full text-left text-base">
-                  <thead className="bg-gray-100 text-gray-700">
+      {/* Completed Projects Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Completed Projects</h2>
+        </div>
+        
+        {completedProjects.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-gray-600">No completed projects yet</p>
+          </div>
+        ) : (
+          <>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="p-4 font-semibold">ID</th>
-                      <th className="p-4 font-semibold">Task</th>
-                      <th className="p-4 font-semibold">Vehicle Model</th>
-                      <th className="p-4 font-semibold">Date</th>
-                      <th className="p-4 font-semibold">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Model</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {(showAllCompleted ? completedProjects : completedProjects.slice(0, 5)).map((project) => (
-                      <tr key={project.id} className="border-t hover:bg-gray-50 transition-colors">
-                        <td className="p-4">{project.id}</td>
-                        <td className="p-4">{project.taskName}</td>
-                        <td className="p-4">{getVehicleModel(project)}</td>
-                        <td className="p-4">{formatDate(project.startDate)}</td>
-                        <td className="p-4 text-green-600 font-semibold">{project.status}</td>
+                      <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 text-sm text-gray-900">{project.id}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{project.taskName}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{getVehicleModel(project)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatDate(project.startDate)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            {project.status}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              {completedProjects.length > 5 && (
-                <button
-                  onClick={() => setShowAllCompleted(!showAllCompleted)}
-                  className="mt-3 text-blue-600 hover:text-blue-800 text-sm md:text-base font-medium transition-colors"
-                >
-                  {showAllCompleted ? 'Show less...' : `Show more... (${completedProjects.length - 5} more)`}
-                </button>
-              )}
-            </>
-          )}
+            </div>
+            {completedProjects.length > 5 && (
+              <button
+                onClick={() => setShowAllCompleted(!showAllCompleted)}
+                className="mt-4 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              >
+                {showAllCompleted ? 'Show Less' : `Show More (${completedProjects.length - 5} more)`}
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

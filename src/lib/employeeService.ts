@@ -47,9 +47,11 @@ export const employeeService = {
     }));
   },
 
-  // Update appointment status (uses existing appointment update endpoint)
-  updateAppointmentStatus: async (appointmentId: string, status: string): Promise<Appointment> => {
-    return await api.put<Appointment>(`/appointments/${appointmentId}`, { status });
+  // Update appointment status (uses progress update endpoint)
+  updateAppointmentStatus: async (appointmentId: string, status: string): Promise<any> => {
+    return await api.post(`/employee/progress/${appointmentId}/status`, null, {
+      params: { status }
+    });
   },
 
   // Get progress updates for an appointment
@@ -59,15 +61,20 @@ export const employeeService = {
 
   // Create a progress update for an appointment
   createProgressUpdate: async (appointmentId: string, data: ProgressUpdateData): Promise<any> => {
-    return await api.post('/employee/progress', {
-      appointmentId,
-      ...data
+    return await api.put(`/employee/progress/${appointmentId}`, {
+      stage: data.stage,
+      percentage: data.percentage,
+      remarks: data.remarks || ''
     });
   },
 
   // Update an existing progress update
   updateProgressUpdate: async (progressId: string, data: ProgressUpdateData): Promise<any> => {
-    return await api.put(`/employee/progress/${progressId}`, data);
+    return await api.put(`/employee/progress/${progressId}`, {
+      stage: data.stage,
+      percentage: data.percentage,
+      remarks: data.remarks || ''
+    });
   },
 
   // Delete a progress update

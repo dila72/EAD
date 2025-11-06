@@ -72,28 +72,28 @@ export default function EmployeeAppointmentsPage() {
       setUpdating(true);
       setError(null);
 
-      // Update status if changed
-      if (statusUpdate !== updateModal.appointment.status) {
-        await employeeService.updateAppointmentStatus(
-          updateModal.appointment.id,
-          statusUpdate
-        );
-      }
+      // Combine status update and progress update into one call
+      // If no progress data, use current values
+      const updateData = {
+        stage: statusUpdate || updateModal.appointment.status || 'PENDING',
+        percentage: progressData.percentage > 0 ? progressData.percentage : 0,
+        remarks: progressData.remarks || `Status updated to ${statusUpdate}`
+      };
 
-      // Create progress update if data provided
-      if (progressData.stage && progressData.percentage > 0) {
-        await employeeService.createProgressUpdate(
-          updateModal.appointment.id,
-          progressData
-        );
-      }
+      await employeeService.createProgressUpdate(
+        updateModal.appointment.id,
+        updateData
+      );
 
       // Refresh appointments
       await fetchData();
       closeUpdateModal();
+      
+      alert('Update successful!');
     } catch (error) {
       console.error('Error updating appointment:', error);
       setError('Failed to update appointment. Please try again.');
+      alert('Failed to update appointment. Please try again.');
     } finally {
       setUpdating(false);
     }

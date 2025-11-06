@@ -242,7 +242,7 @@ function ServiceProgressCard({
   onUpdateStatus 
 }: {
   appointment: AppointmentProgress;
-  onTimerToggle: (id: number) => void;
+  onTimerToggle: (id: number | string) => void;
   onLogTime: (appointment: AppointmentProgress) => void;
   onUpdateStatus: (appointment: AppointmentProgress) => void;
 }) {
@@ -316,7 +316,7 @@ function ServiceProgressCard({
       {/* Action Buttons */}
       <div className="flex gap-2">
         <button
-          onClick={() => onTimerToggle(Number(appointment.appointmentId))}
+          onClick={() => onTimerToggle(appointment.appointmentId)}
           className={`flex-1 px-4 py-2 rounded-md text-white font-medium transition flex items-center justify-center gap-2 ${
             appointment.timerRunning 
               ? 'bg-red-500 hover:bg-red-600' 
@@ -367,7 +367,7 @@ export default function EmployeeProgressPage() {
 
   // Transform API appointment data to AppointmentProgress format
   const transformAppointment = (item: Appointment): AppointmentProgress => ({
-    appointmentId: typeof item.id === 'string' ? parseInt(item.id) : item.id,
+    appointmentId: item.id, // Keep as is (string UUID or number)
     serviceName: item.serviceName || 'Service',
     location: item.location || 'Location TBD',
     customerName: item.customerName || 'Unknown Customer',
@@ -392,7 +392,7 @@ export default function EmployeeProgressPage() {
       
       // Transform projects to appointment progress format
       const transformedProjects = projectsData.map((proj: any) => ({
-        appointmentId: typeof proj.id === 'string' ? parseInt(proj.id) : proj.id,
+        appointmentId: proj.id, // Keep as is (string UUID or number)
         serviceName: proj.taskName || 'Project',
         location: 'On-site',
         customerName: 'Customer',
@@ -425,7 +425,7 @@ export default function EmployeeProgressPage() {
   }, []);
 
   // Timer toggle handler
-  const handleTimerToggle = async (appointmentId: number) => {
+  const handleTimerToggle = async (appointmentId: number | string) => {
     const appointment = appointments.find(a => a.appointmentId === appointmentId);
     if (!appointment) return;
 
