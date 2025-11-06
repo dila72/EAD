@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, LogOut, ChevronDown } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/context/AuthContext';
 
 interface UserProfileCardProps {
   pictureSrc?: string;
@@ -19,34 +19,31 @@ export default function UserProfileCard({
   userRole,
   useCurrentUser = true,
 }: UserProfileCardProps) {
-  const router = useRouter();
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{
-    name: string;
+    name?: string;
     email: string;
     role: string;
     photo?: string;
+    firstName?: string;
+    lastName?: string;
   } | null>(null);
 
   useEffect(() => {
-    if (useCurrentUser) {
-      // Get user from localStorage
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          setCurrentUser(user);
-        } catch (error) {
-          console.error('Error parsing user:', error);
-        }
-      }
+    if (useCurrentUser && user) {
+      setCurrentUser({
+        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
     }
-  }, [useCurrentUser]);
+  }, [useCurrentUser, user]);
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    router.push('/auth/login');
+    logout();
   };
 
   const displayName = userName || currentUser?.name || 'User';
