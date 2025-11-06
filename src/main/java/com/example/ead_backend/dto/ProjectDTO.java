@@ -13,4 +13,5 @@ public class ProjectDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private ProjectStatus status;
+    private EmployeeDTO employee;
 }
