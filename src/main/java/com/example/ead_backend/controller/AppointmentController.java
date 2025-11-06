@@ -2,11 +2,17 @@ package com.example.ead_backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.ead_backend.dto.AppointmentDTO;
+import com.example.ead_backend.dto.AssignAppointmentRequest;
+import com.example.ead_backend.dto.EmployeeAvailabilityDTO;
 import com.example.ead_backend.service.AppointmentService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.security.Principal;
 
@@ -88,5 +94,49 @@ public class AppointmentController {
 
         appointmentService.deleteAppointment(id);
         log.info("Appointment {} deleted successfully", id);
+    }
+    
+    // ==================== ADMIN ENDPOINTS ====================
+    
+    /**
+     * Get all pending appointments that need to be assigned to employees
+     * Only accessible by admins
+     */
+    @GetMapping("/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AppointmentDTO>> getPendingAppointments() {
+        log.info("Admin fetching pending appointments");
+        List<AppointmentDTO> pendingAppointments = appointmentService.getPendingAppointments();
+        return ResponseEntity.ok(pendingAppointments);
+    }
+    
+    /**
+     * Get available employees for a specific date
+     * Returns employee information with their current appointment count
+     */
+    @GetMapping("/available-employees")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EmployeeAvailabilityDTO>> getAvailableEmployees(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        log.info("Admin fetching available employees for date: {}", date);
+        List<EmployeeAvailabilityDTO> employees = appointmentService.getAvailableEmployees(date);
+        return ResponseEntity.ok(employees);
+    }
+    
+    /**
+     * Assign a pending appointment to an employee
+     * Changes appointment status from PENDING to UPCOMING
+     */
+    @PutMapping("/{appointmentId}/assign")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AppointmentDTO> assignAppointment(
+            @PathVariable String appointmentId,
+            @RequestBody AssignAppointmentRequest request) {
+        log.info("Admin assigning appointment {} to employee {}", appointmentId, request.getEmployeeId());
+        
+        AppointmentDTO assigned = appointmentService.assignAppointmentToEmployee(
+                appointmentId, request.getEmployeeId());
+        
+        return ResponseEntity.ok(assigned);
     }
 }

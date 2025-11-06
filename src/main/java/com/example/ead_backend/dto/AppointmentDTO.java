@@ -15,4 +15,8 @@ public class AppointmentDTO {
     private String startTime;
     private String endTime;
     private AppointmentStatus status;
+    
+    // Employee assignment fields
+    private Long employeeId;
+    private String employeeName;
 }
