@@ -88,5 +88,12 @@ export const appointmentService = {
       throw new Error('Invalid appointment id');
     }
     await axiosInstance.delete(`/appointments/${encodeURIComponent(appointmentId)}`);
+  },
+
+  // Get booked time slots for a specific date
+  getAvailability: async (date: string): Promise<string[]> => {
+    const { data } = await axiosInstance.get(`/appointments/availability?date=${date}`);
+    // Backend returns { date: "2024-01-15", booked: ["09:00", "10:30", ...] }
+    return data.booked || [];
   }
 };

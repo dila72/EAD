@@ -14,10 +14,10 @@ export default function CustomersPage() {
       try {
         // Fetch customers from admin API
         const { adminService } = await import('@/lib/adminService');
-        const response = await adminService.getAllCustomers();
+        const customersData = await adminService.getAllCustomers();
         
         // Transform backend customer data to match frontend interface
-        const transformedCustomers = response.data.map((customer: any) => ({
+        const transformedCustomers = customersData.map((customer: any) => ({
           id: customer.id,
           name: `${customer.firstName} ${customer.lastName}`,
           email: customer.email,

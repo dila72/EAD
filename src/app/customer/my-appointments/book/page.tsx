@@ -20,14 +20,77 @@ export default function BookAppointmentPage() {
   // Real data from API
   const [services, setServices] = useState<Service[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
 
   // Fetch services and vehicles on mount
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Fetch availability when date is selected
+  useEffect(() => {
+    if (selectedDate) {
+      fetchAvailability(selectedDate);
+      // Clear selected time slot when date changes
+      setSelectedTimeSlot('');
+    }
+  }, [selectedDate]);
+
+  // Refresh availability when moving to step 3 (time selection)
+  useEffect(() => {
+    if (step === 3 && selectedDate) {
+      console.log('Step 3: Refreshing availability for', selectedDate);
+      fetchAvailability(selectedDate);
+    }
+  }, [step]);
+
+  const fetchAvailability = async (date: string) => {
+    try {
+      setLoadingAvailability(true);
+      console.log('Fetching availability for date:', date);
+      const bookedTimes = await appointmentService.getAvailability(date);
+      console.log('Backend returned booked times (24h):', bookedTimes);
+      
+      // Convert backend 24h format (HH:mm) to 12h format to match timeSlots
+      const booked12h = bookedTimes.map(time24 => convertTo12Hour(time24));
+      console.log('Converted to 12h format:', booked12h);
+      
+      setBookedSlots(booked12h);
+      
+      // If currently selected slot is now booked, clear it
+      if (selectedTimeSlot && booked12h.includes(selectedTimeSlot)) {
+        console.warn('Currently selected slot is now booked, clearing selection');
+        setSelectedTimeSlot('');
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch availability:', err);
+      // Don't show error to user, just assume no slots booked
+      setBookedSlots([]);
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
+
+  const convertTo12Hour = (time24: string): string => {
+    // Convert "09:00" to "09:00 AM", "14:30" to "02:30 PM"
+    try {
+      const [h, m] = time24.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) {
+        console.error('Invalid time format:', time24);
+        return time24;
+      }
+      const hour = h % 12 || 12;
+      const period = h >= 12 ? 'PM' : 'AM';
+      return `${String(hour).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+    } catch (err) {
+      console.error('Error converting time:', time24, err);
+      return time24;
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -116,6 +179,13 @@ export default function BookAppointmentPage() {
       return;
     }
 
+    // Check if selected time slot is booked
+    if (bookedSlots.includes(selectedTimeSlot)) {
+      window.alert('This time slot is no longer available. Please select another time.');
+      setSelectedTimeSlot(''); // Clear the selection
+      return;
+    }
+
     const serviceObj = services.find(s => s.id === selectedService);
     const vehicleObj = vehicles.find(v => v.id === selectedVehicle);
 
@@ -151,7 +221,16 @@ export default function BookAppointmentPage() {
     } catch (err: any) {
       console.error('Booking failed', err);
       const errorMessage = err?.response?.data?.message || err?.response?.data || 'Failed to book appointment';
-      window.alert(errorMessage);
+      
+      // If the slot was taken, refresh availability
+      if (errorMessage.includes('already booked') || errorMessage.includes('Time slot')) {
+        window.alert('This time slot was just booked by another customer. Please select a different time.');
+        // Refresh availability
+        fetchAvailability(selectedDate);
+        setSelectedTimeSlot('');
+      } else {
+        window.alert(errorMessage);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -160,7 +239,10 @@ export default function BookAppointmentPage() {
   const canProceed = () => {
     if (step === 1) return selectedService && selectedVehicle;
     if (step === 2) return selectedDate;
-    if (step === 3) return selectedTimeSlot;
+    if (step === 3) {
+      // Can only proceed if time slot is selected AND it's not booked
+      return selectedTimeSlot && !bookedSlots.includes(selectedTimeSlot);
+    }
     return false;
   };
 
@@ -418,26 +500,129 @@ export default function BookAppointmentPage() {
       {step === 3 && (
         <div>
           <h2 className="text-xl font-semibold mb-4">Select a Time Slot</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {timeSlots.map((slot) => (
-              <div
-                key={slot}
-                onClick={() => setSelectedTimeSlot(slot)}
-                className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${
-                  selectedTimeSlot === slot
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex flex-col items-center">
-                  <Clock className={`w-5 h-5 mb-2 ${selectedTimeSlot === slot ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <div className={`text-sm font-semibold ${selectedTimeSlot === slot ? 'text-blue-600' : 'text-gray-900'}`}>
-                    {slot}
+          
+          {/* Debug Info - Remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-4 p-3 bg-gray-100 rounded text-xs font-mono">
+              <strong>Debug Info:</strong>
+              <div>Date: {selectedDate}</div>
+              <div>Booked Slots ({bookedSlots.length}): {JSON.stringify(bookedSlots)}</div>
+              <div>Selected: {selectedTimeSlot || 'none'}</div>
+              <div>Is Selected Booked: {selectedTimeSlot && bookedSlots.includes(selectedTimeSlot) ? 'YES' : 'NO'}</div>
+            </div>
+          )}
+          
+          {loadingAvailability ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-3 text-gray-600">Checking availability...</span>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {timeSlots.map((slot) => {
+                  const isBooked = bookedSlots.includes(slot);
+                  return (
+                    <div
+                      key={slot}
+                      onClick={() => !isBooked && setSelectedTimeSlot(slot)}
+                      className={`relative p-4 border-2 rounded-lg text-center transition-all ${
+                        isBooked
+                          ? 'border-red-200 bg-red-50 cursor-not-allowed'
+                          : selectedTimeSlot === slot
+                          ? 'border-blue-600 bg-blue-50 cursor-pointer shadow-md'
+                          : 'border-gray-200 hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center">
+                        {isBooked ? (
+                          <>
+                            <div className="relative">
+                              <Clock className="w-5 h-5 mb-2 text-red-400" />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-6 h-0.5 bg-red-500 transform rotate-45"></div>
+                              </div>
+                            </div>
+                            <div className="text-sm font-semibold text-red-600 line-through">
+                              {slot}
+                            </div>
+                            <span className="text-xs text-red-600 mt-1 font-medium">Unavailable</span>
+                          </>
+                        ) : (
+                          <>
+                            <Clock className={`w-5 h-5 mb-2 ${
+                              selectedTimeSlot === slot ? 'text-blue-600' : 'text-gray-400'
+                            }`} />
+                            <div className={`text-sm font-semibold ${
+                              selectedTimeSlot === slot ? 'text-blue-600' : 'text-gray-900'
+                            }`}>
+                              {slot}
+                            </div>
+                            {selectedTimeSlot === slot && (
+                              <span className="text-xs text-blue-600 mt-1">Selected</span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-6 flex flex-wrap gap-4 items-center justify-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-12 border-2 border-blue-600 bg-blue-50 rounded flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-blue-600" />
                   </div>
+                  <span className="text-sm text-gray-700">Available</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-12 border-2 border-red-200 bg-red-50 rounded flex items-center justify-center">
+                    <div className="relative">
+                      <Clock className="w-5 h-5 text-red-400" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-6 h-0.5 bg-red-500 transform rotate-45"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-700">Unavailable</span>
                 </div>
               </div>
-            ))}
-          </div>
+              {bookedSlots.length > 0 && (
+                <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-semibold text-red-800">
+                        {bookedSlots.length} time slot{bookedSlots.length > 1 ? 's' : ''} unavailable
+                      </p>
+                      <p className="text-xs text-red-700 mt-1">
+                        These slots are already booked by you or other customers. Please choose an available time.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {bookedSlots.length === 0 && !loadingAvailability && (
+                <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-semibold text-green-800">
+                        All time slots are available!
+                      </p>
+                      <p className="text-xs text-green-700 mt-1">
+                        Select any time slot that works best for you.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           {selectedTimeSlot && (
             <div className="mt-4 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">

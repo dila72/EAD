@@ -29,25 +29,20 @@ export default function AdminDashboard() {
     const fetchDashboardData = async () => {
       try {
         // Fetch all data in parallel
-        const [customersRes, employeesRes, appointmentsRes, projectsRes] = await Promise.all([
+        const [customers, employees, appointments, projects] = await Promise.all([
           adminService.getAllCustomers(),
           adminService.getAllEmployees(),
           adminService.getAllAppointments(),
           adminService.getAllProjects(),
         ]);
 
-        const customers = customersRes.data || [];
-        const employees = employeesRes.data || [];
-        const appointments = appointmentsRes.data || [];
-        const projects = projectsRes.data || [];
-
         // Calculate stats
         const upcomingCount = appointments.filter(
-          (apt: any) => apt.status === 'PENDING' || apt.status === 'Upcoming'
+          (apt: any) => apt.status === 'UPCOMING' || apt.status === 'Upcoming'
         ).length;
 
         const ongoingCount = projects.filter(
-          (proj: any) => proj.status === 'ONGOING' || proj.status === 'Ongoing'
+          (proj: any) => proj.status === 'IN_PROGRESS' || proj.status === 'Ongoing'
         ).length;
 
         setStats({

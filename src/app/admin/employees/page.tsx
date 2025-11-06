@@ -43,10 +43,10 @@ export default function EmployeesPage() {
       try {
         // Fetch employees from admin API
         const { adminService } = await import('@/lib/adminService');
-        const response = await adminService.getAllEmployees();
+        const employeesData = await adminService.getAllEmployees();
         
         // Transform backend employee data to match frontend interface
-        const transformedEmployees = response.data.map((emp: any, index: number) => ({
+        const transformedEmployees = employeesData.map((emp: any, index: number) => ({
           id: emp.id,
           name: `${emp.firstName} ${emp.lastName}`,
           email: emp.email,

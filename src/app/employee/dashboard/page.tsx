@@ -2,19 +2,24 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
-import { getEmployeeAppointments, type Appointment } from '@/lib/api';
+import { employeeService } from '@/lib/employeeService';
+import { Appointment } from '@/types';
 
 export default function EmployeeDashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getEmployeeAppointments();
+        setLoading(true);
+        setError(null);
+        const data = await employeeService.getMyAppointments();
         setAppointments(data);
       } catch (error) {
         console.error('Error fetching appointments:', error);
+        setError('Failed to load appointments. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -27,7 +32,6 @@ export default function EmployeeDashboard() {
   const totalAppointments = appointments.length;
   const inProgress = appointments.filter(a => a.status?.toLowerCase() === 'in progress').length;
   const completedToday = appointments.filter(a => a.status?.toLowerCase() === 'completed').length;
-  const totalHoursLogged = appointments.reduce((sum, a) => sum + (a.actualHours || 0), 0);
 
   const getStatusBadge = (status?: string) => {
     const statusLower = status?.toLowerCase() || 'not started';
@@ -38,6 +42,10 @@ export default function EmployeeDashboard() {
         return 'bg-blue-100 text-blue-800';
       case 'paused':
         return 'bg-yellow-100 text-yellow-800';
+      case 'pending':
+        return 'bg-purple-100 text-purple-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -49,6 +57,16 @@ export default function EmployeeDashboard() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
         </div>
       </div>
     );
@@ -104,29 +122,11 @@ export default function EmployeeDashboard() {
                       {appointment.serviceName}
                     </h3>
                     <p className="text-sm text-gray-600 mb-2">
-                      {appointment.customerName} • {appointment.location}
+                      {appointment.date} {appointment.time && `at ${appointment.time}`}
                     </p>
-                    
-                    {/* Progress Bar */}
-                    <div className="mb-2">
-                      <div className="flex justify-between text-xs text-gray-600 mb-1">
-                        <span>Progress</span>
-                        <span>{appointment.progressPercentage || 0}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${appointment.progressPercentage || 0}%` }}
-                        ></div>
-                      </div>
-                    </div>
 
                     {/* Time and Status */}
                     <div className="flex items-center gap-4 text-sm">
-                      <span className="text-gray-600 flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {appointment.actualHours?.toFixed(1) || 0}h / {appointment.estimatedHours || 0}h
-                      </span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(appointment.status)}`}>
                         {appointment.status || 'Not Started'}
                       </span>

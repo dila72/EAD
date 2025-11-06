@@ -26,11 +26,11 @@ export default function AdminProjectsPage() {
       try {
         // Fetch projects from admin API
         const { adminService } = await import('@/lib/adminService');
-        const projectsResponse = await adminService.getAllProjects();
-        const employeesResponse = await adminService.getAllEmployees();
+        const projectsData = await adminService.getAllProjects();
+        const employeesData = await adminService.getAllEmployees();
         
         // Transform backend project data to match frontend interface
-        const transformedProjects = projectsResponse.data.map((proj: any) => ({
+        const transformedProjects = projectsData.map((proj: any) => ({
           id: proj.projectId,
           taskName: proj.name,
           description: proj.description || '',
@@ -45,7 +45,7 @@ export default function AdminProjectsPage() {
         }));
 
         // Transform backend employee data to match frontend interface
-        const transformedEmployees = employeesResponse.data.map((emp: any) => ({
+        const transformedEmployees = employeesData.map((emp: any) => ({
           id: emp.id,
           name: `${emp.firstName} ${emp.lastName}`,
           position: emp.role,

@@ -1,48 +1,47 @@
-import { axiosInstance } from './apiClient';
+import api from './apiClient';
 import { CreateEmployeeRequest } from '@/types/auth.types';
 
 export const adminService = {
   // Employee endpoints
   createEmployee: async (data: CreateEmployeeRequest) => {
-    const response = await axiosInstance.post('/admin/employees', data);
-    return response;
+    return await api.post('/admin/employees', data);
   },
   
   getAllEmployees: async () => {
-    const response = await axiosInstance.get('/admin/employees');
-    return response;
+    return await api.get('/admin/employees');
   },
   
   getEmployeeById: async (id: string) => {
-    const response = await axiosInstance.get(`/admin/employees/${id}`);
-    return response;
+    return await api.get(`/admin/employees/${id}`);
   },
   
   updateEmployee: async (id: string, data: any) => {
-    const response = await axiosInstance.put(`/admin/employees/${id}`, data);
-    return response;
+    return await api.put(`/admin/employees/${id}`, data);
   },
   
   deleteEmployee: async (id: string) => {
-    const response = await axiosInstance.delete(`/admin/employees/${id}`);
-    return response;
+    return await api.delete(`/admin/employees/${id}`);
   },
 
   // Appointments endpoint
   getAllAppointments: async () => {
-    const response = await axiosInstance.get('/admin/appointments');
-    return response;
+    return await api.get('/admin/appointments');
+  },
+
+  // Assign employee to appointment
+  assignEmployeeToAppointment: async (appointmentId: string, employeeId: number) => {
+    return await api.put(`/appointments/${appointmentId}/assign-employee`, {
+      employeeId
+    });
   },
 
   // Customers endpoint
   getAllCustomers: async () => {
-    const response = await axiosInstance.get('/admin/customers');
-    return response;
+    return await api.get('/admin/customers');
   },
 
   // Projects endpoint
   getAllProjects: async () => {
-    const response = await axiosInstance.get('/admin/projects');
-    return response;
+    return await api.get('/admin/projects');
   },
 };

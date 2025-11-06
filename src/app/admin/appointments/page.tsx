@@ -26,27 +26,30 @@ export default function AdminAppointmentsPage() {
       try {
         // Fetch appointments from admin API
         const { adminService } = await import('@/lib/adminService');
-        const appointmentsResponse = await adminService.getAllAppointments();
-        const employeesResponse = await adminService.getAllEmployees();
+        const appointmentsData = await adminService.getAllAppointments();
+        const employeesData = await adminService.getAllEmployees();
+        
+        // Transform backend employee data to match frontend interface
+        const transformedEmployees = employeesData.map((emp: any) => ({
+          id: emp.id,
+          name: `${emp.firstName} ${emp.lastName}`,
+          position: emp.role,
+          isAvailable: true, // Default to available
+          currentAppointments: 0, // Default to 0
+        }));
+
+        // Create a map of employee IDs to names for quick lookup
+        const employeeMap = new Map(transformedEmployees.map(emp => [emp.id, emp.name]));
         
         // Transform backend appointment data to match frontend interface
-        const transformedAppointments = appointmentsResponse.data.map((apt: any) => ({
+        const transformedAppointments = appointmentsData.map((apt: any) => ({
           id: apt.appointmentId,
           serviceName: apt.service,
           vehicleNumber: apt.vehicleNo,
           date: apt.date,
           time: apt.startTime,
           status: apt.status,
-          assignedEmployee: null, // Will be populated if needed
-        }));
-
-        // Transform backend employee data to match frontend interface
-        const transformedEmployees = employeesResponse.data.map((emp: any) => ({
-          id: emp.id,
-          name: `${emp.firstName} ${emp.lastName}`,
-          position: emp.role,
-          isAvailable: true, // Default to available
-          currentAppointments: 0, // Default to 0
+          assignedEmployee: apt.employee ? employeeMap.get(apt.employee.id) || null : null, // Get employee name if assigned
         }));
 
         setAppointments(transformedAppointments);
@@ -109,20 +112,42 @@ export default function AdminAppointmentsPage() {
     setShowAssignModal(true);
   };
 
-  const handleAssignEmployee = () => {
+  const handleAssignEmployee = async () => {
     if (!selectedEmployee || !selectedAppointment) {
       alert('Please select an employee');
       return;
     }
 
-    // Only update the appointment with assigned employee - NO automatic availability updates
-    setAppointments(appointments.map(apt =>
-      apt.id === selectedAppointment.id
-        ? { ...apt, assignedEmployee: selectedEmployee }
-        : apt
-    ));
+    try {
+      const { adminService } = await import('@/lib/adminService');
+      await adminService.assignEmployeeToAppointment(
+        selectedAppointment.id,
+        Number(selectedEmployee)
+      );
 
-    alert(`Employee ${selectedEmployee} has been assigned successfully!`);
+      // Refresh the appointments list to show the updated assignment
+      const appointmentsData = await adminService.getAllAppointments();
+      
+      // Create a map of employee IDs to names for quick lookup
+      const employeeMap = new Map(employees.map(emp => [emp.id, emp.name]));
+      
+      const transformedAppointments = appointmentsData.map((apt: any) => ({
+        id: apt.appointmentId,
+        serviceName: apt.service,
+        vehicleNumber: apt.vehicleNo,
+        date: apt.date,
+        time: apt.startTime,
+        status: apt.status,
+        assignedEmployee: apt.employee ? employeeMap.get(apt.employee.id) || null : null,
+      }));
+      
+      setAppointments(transformedAppointments);
+
+      alert(`Employee has been assigned successfully!`);
+    } catch (error) {
+      console.error('Error assigning employee:', error);
+      alert('Failed to assign employee. Please try again.');
+    }
 
     setShowAssignModal(false);
     setSelectedAppointment(null);
@@ -322,9 +347,9 @@ export default function AdminAppointmentsPage() {
                   {employees.map((employee) => (
                     <div
                       key={employee.id}
-                      onClick={() => employee.isAvailable && setSelectedEmployee(employee.name)}
+                      onClick={() => employee.isAvailable && setSelectedEmployee(employee.id.toString())}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedEmployee === employee.name
+                        selectedEmployee === employee.id.toString()
                           ? 'border-blue-500 bg-blue-50'
                           : employee.isAvailable
                           ? 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'
