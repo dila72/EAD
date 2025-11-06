@@ -23,44 +23,59 @@ export default function AdminAppointmentsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Import mock appointments
-      const { mockAppointments } = await import('@/data/mockData');
-      
-      // Mock employees with availability status
-      const mockEmployees: Employee[] = [
-        {
-          id: 1,
-          name: 'Mike Wilson',
-          position: 'Senior Technician',
-          isAvailable: true,
-          currentAppointments: 0,
-        },
-        {
-          id: 2,
-          name: 'Robert Martinez',
-          position: 'Technician',
-          isAvailable: true,
-          currentAppointments: 0,
-        },
-        {
-          id: 3,
-          name: 'David Smith',
-          position: 'Technician',
-          isAvailable: false,
-          currentAppointments: 2,
-        },
-        {
-          id: 4,
-          name: 'Carlos Rodriguez',
-          position: 'Master Technician',
-          isAvailable: true,
-          currentAppointments: 1,
-        },
-      ];
+      try {
+        // Fetch appointments from admin API
+        const { adminService } = await import('@/lib/adminService');
+        const appointmentsResponse = await adminService.getAllAppointments();
+        const employeesResponse = await adminService.getAllEmployees();
+        
+        // Transform backend appointment data to match frontend interface
+        const transformedAppointments = appointmentsResponse.data.map((apt: any) => ({
+          id: apt.appointmentId,
+          serviceName: apt.service,
+          vehicleNumber: apt.vehicleNo,
+          date: apt.date,
+          time: apt.startTime,
+          status: apt.status,
+          assignedEmployee: null, // Will be populated if needed
+        }));
 
-      setAppointments(mockAppointments);
-      setEmployees(mockEmployees);
-      setLoading(false);
+        // Transform backend employee data to match frontend interface
+        const transformedEmployees = employeesResponse.data.map((emp: any) => ({
+          id: emp.id,
+          name: `${emp.firstName} ${emp.lastName}`,
+          position: emp.role,
+          isAvailable: true, // Default to available
+          currentAppointments: 0, // Default to 0
+        }));
+
+        setAppointments(transformedAppointments);
+        setEmployees(transformedEmployees);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Fallback to mock data on error
+        const { mockAppointments } = await import('@/data/mockData');
+        const mockEmployees: Employee[] = [
+          {
+            id: 1,
+            name: 'Mike Wilson',
+            position: 'Senior Technician',
+            isAvailable: true,
+            currentAppointments: 0,
+          },
+          {
+            id: 2,
+            name: 'Robert Martinez',
+            position: 'Technician',
+            isAvailable: true,
+            currentAppointments: 0,
+          },
+        ];
+        setAppointments(mockAppointments);
+        setEmployees(mockEmployees);
+        setLoading(false);
+      }
     };
 
     fetchData();

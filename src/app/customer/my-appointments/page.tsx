@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Clock, Car, CheckCircle, XCircle, Plus, Eye } from 'lucide-react';
-import { appointmentService } from '@/lib/api/appointmentService';
-import type { Appointment } from '@/lib/api/appointmentService';
+import { appointmentService, type Appointment } from '@/lib/api/appointmentService';
 
 export default function MyAppointments() {
   const router = useRouter();
@@ -25,7 +24,7 @@ export default function MyAppointments() {
       setAppointments(apts);
     } catch (error) {
       console.error('Failed to load appointments:', error);
-      setError('Failed to load appointments');
+      setError('Failed to load appointments. Please try again later.');
       setAppointments([]);
     } finally {
       setLoading(false);
@@ -58,59 +57,64 @@ export default function MyAppointments() {
   };
 
   const filteredAppointments = appointments.filter(apt => {
+    const status = apt.status.toLowerCase();
     if (activeTab === 'all') return true;
-    if (activeTab === 'upcoming') return apt.status.toLowerCase() === 'upcoming';
-    if (activeTab === 'completed') return apt.status.toLowerCase() === 'completed';
-    if (activeTab === 'cancelled') return apt.status.toLowerCase() === 'cancelled';
+    if (activeTab === 'upcoming') return status === 'upcoming' || status === 'pending' || status === 'approved';
+    if (activeTab === 'completed') return status === 'completed';
+    if (activeTab === 'cancelled') return status === 'cancelled';
     return true;
   });
 
-  const upcomingCount = appointments.filter(a => a.status.toLowerCase() === 'upcoming').length;
+  const upcomingCount = appointments.filter(a => {
+    const status = a.status.toLowerCase();
+    return status === 'upcoming' || status === 'pending' || status === 'approved';
+  }).length;
   const completedCount = appointments.filter(a => a.status.toLowerCase() === 'completed').length;
   const cancelledCount = appointments.filter(a => a.status.toLowerCase() === 'cancelled').length;
 
-  // Cancel an appointment — behaves the same as Delete (permanent removal)
-  const handleCancel = async (appointmentId: string) => {
-    const confirmed = window.confirm('Are you sure you want to cancel this appointment? This action will remove the appointment.');
-    if (!confirmed) return;
-
+  // Cancel an appointment
+  const handleCancel = async (appointmentId?: string) => {
     if (!appointmentId) {
       console.error('Attempted to cancel appointment with empty id');
-      window.alert('Unable to cancel appointment: invalid id');
+      alert('Unable to cancel appointment: invalid id');
       return;
     }
 
+    const confirmed = window.confirm('Are you sure you want to cancel this appointment?');
+    if (!confirmed) return;
+
     try {
-      await appointmentService.deleteAppointment(appointmentId);
-      // Remove the appointment row from UI
-      setAppointments(prev => prev.filter(a => a.id !== appointmentId));
-      window.alert('Appointment cancelled');
+      await appointmentService.cancelAppointment(appointmentId);
+      // Reload appointments to get updated status
+      await loadAppointments();
+      alert('Appointment cancelled successfully');
     } catch (err: unknown) {
-      console.error('Cancel (delete) failed:', err);
+      console.error('Cancel failed:', err);
       const msg = err instanceof Error ? err.message : String(err);
-      window.alert('Failed to cancel appointment: ' + (msg || 'Unknown error'));
+      alert('Failed to cancel appointment: ' + (msg || 'Unknown error'));
     }
   };
 
   // Delete a completed appointment (only available in Completed tab)
-  const handleDelete = async (appointmentId: string) => {
-    const confirmed = window.confirm('Delete this completed appointment? This action cannot be undone.');
-    if (!confirmed) return;
-
+  const handleDelete = async (appointmentId?: string) => {
     if (!appointmentId) {
       console.error('Attempted to delete appointment with empty id');
-      window.alert('Unable to delete appointment: invalid id');
+      alert('Unable to delete appointment: invalid id');
       return;
     }
 
+    const confirmed = window.confirm('Delete this completed appointment? This action cannot be undone.');
+    if (!confirmed) return;
+
     try {
       await appointmentService.deleteAppointment(appointmentId);
+      // Remove from local state
       setAppointments(prev => prev.filter(a => a.id !== appointmentId));
-      window.alert('Appointment deleted');
+      alert('Appointment deleted successfully');
     } catch (err: unknown) {
       console.error('Delete failed:', err);
       const msg = err instanceof Error ? err.message : String(err);
-      window.alert('Failed to delete appointment: ' + (msg || 'Unknown error'));
+      alert('Failed to delete appointment: ' + (msg || 'Unknown error'));
     }
   };
 
@@ -305,7 +309,7 @@ export default function MyAppointments() {
                       </button>
 
                       {/* Show Cancel button for non-completed/non-cancelled appointments */}
-                      {appointment.status.toLowerCase() !== 'completed' && appointment.status.toLowerCase() !== 'cancelled' && (
+                      {['upcoming', 'pending', 'approved'].includes(appointment.status.toLowerCase()) && (
                         <button
                           onClick={() => handleCancel(appointment.id)}
                           className="text-red-600 hover:text-red-900 flex items-center gap-1"

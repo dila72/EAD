@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User } from 'lucide-react';
-import { dashboardService, customerService, appointmentService, projectService } from '@/api/mockApiService';
-import type { Customer, Appointment, Project, DashboardStats } from '@/types';
+import { dashboardService } from '@/lib/api/dashboardService';
+import { appointmentService, type Appointment } from '@/lib/api/appointmentService';
+import { projectService, type Project } from '@/lib/api/projectService';
+import type { DashboardStats } from '@/types/dashboard.types';
 
 export default function CustomerDashboard() {
-  const [customer, setCustomer] = useState<Customer | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -19,13 +21,13 @@ export default function CustomerDashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const customerData = await customerService.getProfile();
-      setCustomer(customerData);
+      setError(null);
 
+      // Fetch dashboard data in parallel
       const [statsData, appointmentsData, projectsData] = await Promise.all([
-        dashboardService.getDashboardStats(customerData.id),
-        appointmentService.getUpcomingAppointments(customerData.id),
-        projectService.getOngoingProjects(customerData.id)
+        dashboardService.getDashboardStats(),
+        dashboardService.getUpcomingAppointments(undefined, 4),
+        dashboardService.getOngoingProjects(undefined, 4)
       ]);
 
       setStats(statsData);
@@ -33,6 +35,7 @@ export default function CustomerDashboard() {
       setOngoingProjects(projectsData);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      setError('Failed to load dashboard data. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -53,8 +56,11 @@ export default function CustomerDashboard() {
       case 'completed':
         return 'bg-green-100 text-green-800';
       case 'upcoming':
+      case 'pending':
+      case 'approved':
         return 'bg-blue-100 text-blue-800';
       case 'ongoing':
+      case 'in progress':
         return 'bg-yellow-100 text-yellow-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
@@ -74,11 +80,27 @@ export default function CustomerDashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={loadDashboardData}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {customer?.name}!</h1>
+        <h1 className="text-2xl font-bold mb-2">Customer Dashboard</h1>
         <p className="text-gray-600">Here's what's happening with your vehicles and services</p>
       </div>
 
@@ -167,12 +189,6 @@ export default function CustomerDashboard() {
                       <Clock className="w-4 h-4 text-gray-400" />
                       <span>{appointment.time}</span>
                     </div>
-                    {appointment.assignedEmployee && (
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span>{appointment.assignedEmployee}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -225,16 +241,10 @@ export default function CustomerDashboard() {
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>Started: {formatDate(project.startDate)}</span>
                     </div>
-                    {project.assignedEmployee && (
+                    {project.endDate && (
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span>{project.assignedEmployee}</span>
-                      </div>
-                    )}
-                    {project.estimatedCost && (
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-green-500" />
-                        <span className="font-semibold text-green-600">${project.estimatedCost}</span>
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>End: {formatDate(project.endDate)}</span>
                       </div>
                     )}
                   </div>

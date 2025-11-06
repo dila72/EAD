@@ -10,13 +10,31 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching customers from mockData
     const fetchCustomers = async () => {
-      // Import mock data
-      const { mockCustomer } = await import('@/data/mockData');
-      // Create array of customers (in real app, this would come from API)
-      setCustomers([mockCustomer]);
-      setLoading(false);
+      try {
+        // Fetch customers from admin API
+        const { adminService } = await import('@/lib/adminService');
+        const response = await adminService.getAllCustomers();
+        
+        // Transform backend customer data to match frontend interface
+        const transformedCustomers = response.data.map((customer: any) => ({
+          id: customer.id,
+          name: `${customer.firstName} ${customer.lastName}`,
+          email: customer.email,
+          phone: customer.phoneNumber,
+          address: '', // Not available in backend DTO
+          nic: '', // Not available in backend DTO
+        }));
+
+        setCustomers(transformedCustomers);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+        // Fallback to mock data on error
+        const { mockCustomer } = await import('@/data/mockData');
+        setCustomers([mockCustomer]);
+        setLoading(false);
+      }
     };
 
     fetchCustomers();

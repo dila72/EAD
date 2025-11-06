@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { projectService, customerService } from '@/api/mockApiService';
-import type { Project, Customer } from '@/types';
+import { projectService, type Project } from '@/lib/api/projectService';
 
-export default function Projects() {
-  const [customer, setCustomer] = useState<Customer | null>(null);
+export default function MyProjects() {
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [completedProjects, setCompletedProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAllCompleted, setShowAllCompleted] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState('');
@@ -24,18 +23,26 @@ export default function Projects() {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const customerData = await customerService.getProfile();
-      setCustomer(customerData);
+      setError(null);
 
-      const [ongoing, completed] = await Promise.all([
-        projectService.getOngoingProjects(customerData.id),
-        projectService.getCompletedProjects(customerData.id)
-      ]);
+      // Fetch all projects and filter locally
+      const allProjects = await projectService.getAllProjects();
+      
+      const ongoing = allProjects.filter(p => 
+        p.status.toLowerCase() === 'ongoing' || 
+        p.status.toLowerCase() === 'in progress' ||
+        p.status.toLowerCase() === 'pending'
+      );
+      
+      const completed = allProjects.filter(p => 
+        p.status.toLowerCase() === 'completed'
+      );
 
       setOngoingProjects(ongoing);
       setCompletedProjects(completed);
     } catch (error) {
       console.error('Failed to load projects:', error);
+      setError('Failed to load projects. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -43,25 +50,24 @@ export default function Projects() {
 
   // helper to derive vehicle model from description if stored as 'Vehicle Model: <value>'
   const getVehicleModel = (p: Project) => {
-    const desc = (p as any)?.description as string | undefined;
-    if (!desc) return '';
-    const m = desc.match(/Vehicle Model:\s*(.+)/i);
-    return m ? m[1].trim() : '';
+    if (!p.description) return p.vehicleNumber || '';
+    const m = p.description.match(/Vehicle Model:\s*(.+)/i);
+    return m ? m[1].trim() : p.vehicleNumber || '';
   };
 
   const handleCreateProject = async () => {
     if (!newName || !newDescription || !newVehicleModel || !newStartDate) {
-      window.alert('Please fill in all fields');
+      alert('Please fill in all fields');
       return;
     }
     try {
       setSubmitting(true);
       const combinedDescription = `${newDescription}\n\nVehicle Model: ${newVehicleModel}`;
       await projectService.createProject({
-        name: newName,
+        taskName: newName,
         description: combinedDescription,
         startDate: newStartDate,
-        status: 'PLANNED',
+        status: 'Pending',
       });
       // reset and refresh
       setNewName('');
@@ -70,10 +76,10 @@ export default function Projects() {
       setNewStartDate('');
       setShowNewForm(false);
       await loadProjects();
-      window.alert('Project created');
+      alert('Project created successfully');
     } catch (err) {
       console.error('Failed to create project', err);
-      window.alert('Failed to create project');
+      alert('Failed to create project. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -99,10 +105,28 @@ export default function Projects() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={loadProjects}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <p className="text-gray-700 text-sm md:text-base">Hello,</p>
-      <h2 className="text-base md:text-lg font-bold mb-6 lg:text-xl">Hi {customer?.name}</h2>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">My Projects</h1>
+        <p className="text-gray-600">View and manage your custom service projects</p>
+      </div>
 
           {/* Stats */}
           <div className="flex md:grid md:grid-cols-2 gap-6 mb-8 overflow-x-auto scrollbar-hide py-2 -my-2">
@@ -260,6 +284,6 @@ export default function Projects() {
               )}
             </>
           )}
-    </>
+    </div>
   );
 }

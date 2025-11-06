@@ -1,24 +1,48 @@
-import api from './apiClient';
+import { axiosInstance } from './apiClient';
 import { CreateEmployeeRequest } from '@/types/auth.types';
 
 export const adminService = {
+  // Employee endpoints
   createEmployee: async (data: CreateEmployeeRequest) => {
-    return api.post('/admin/employees', data);
+    const response = await axiosInstance.post('/admin/employees', data);
+    return response;
   },
   
   getAllEmployees: async () => {
-    return api.get('/admin/employees');
+    const response = await axiosInstance.get('/admin/employees');
+    return response;
   },
   
   getEmployeeById: async (id: string) => {
-    return api.get(`/admin/employees/${id}`);
+    const response = await axiosInstance.get(`/admin/employees/${id}`);
+    return response;
   },
   
   updateEmployee: async (id: string, data: any) => {
-    return api.put(`/admin/employees/${id}`, data);
+    const response = await axiosInstance.put(`/admin/employees/${id}`, data);
+    return response;
   },
   
   deleteEmployee: async (id: string) => {
-    return api.delete(`/admin/employees/${id}`);
+    const response = await axiosInstance.delete(`/admin/employees/${id}`);
+    return response;
+  },
+
+  // Appointments endpoint
+  getAllAppointments: async () => {
+    const response = await axiosInstance.get('/admin/appointments');
+    return response;
+  },
+
+  // Customers endpoint
+  getAllCustomers: async () => {
+    const response = await axiosInstance.get('/admin/customers');
+    return response;
+  },
+
+  // Projects endpoint
+  getAllProjects: async () => {
+    const response = await axiosInstance.get('/admin/projects');
+    return response;
   },
 };

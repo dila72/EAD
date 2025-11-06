@@ -39,79 +39,50 @@ export default function EmployeesPage() {
   });
 
   useEffect(() => {
-    // Simulate fetching employees
     const fetchEmployees = async () => {
-      // Mock data
-      const mockEmployees: Employee[] = [
-        {
-          id: 1,
-          name: 'Mike Wilson',
-          email: 'mike.wilson@automobile.com',
-          phone: '+1 234-567-9001',
-          employeeId: 'EMP-2024-001',
-          position: 'Senior Technician',
-          department: 'Service Department',
-          joinedDate: '2022-03-15',
-          specialization: ['Engine Repair', 'Brake Systems', 'Electrical'],
-          completedServices: 156,
-          status: 'active',
-        },
-        {
-          id: 2,
-          name: 'Robert Martinez',
-          email: 'robert.m@automobile.com',
-          phone: '+1 234-567-9002',
-          employeeId: 'EMP-2024-002',
-          position: 'Technician',
-          department: 'Service Department',
-          joinedDate: '2023-01-20',
-          specialization: ['Tire Service', 'Oil Change', 'Diagnostics'],
-          completedServices: 98,
-          status: 'active',
-        },
-        {
-          id: 3,
-          name: 'Jennifer Lee',
-          email: 'jennifer.l@automobile.com',
-          phone: '+1 234-567-9003',
-          employeeId: 'EMP-2024-003',
-          position: 'Service Advisor',
-          department: 'Customer Service',
-          joinedDate: '2023-06-10',
-          specialization: ['Customer Relations', 'Service Scheduling'],
-          completedServices: 210,
-          status: 'active',
-        },
-        {
-          id: 4,
-          name: 'Carlos Rodriguez',
-          email: 'carlos.r@automobile.com',
-          phone: '+1 234-567-9004',
-          employeeId: 'EMP-2024-004',
-          position: 'Master Technician',
-          department: 'Service Department',
-          joinedDate: '2021-09-05',
-          specialization: ['Transmission', 'Engine', 'Suspension'],
-          completedServices: 245,
-          status: 'active',
-        },
-        {
-          id: 5,
-          name: 'Amanda Taylor',
-          email: 'amanda.t@automobile.com',
-          phone: '+1 234-567-9005',
-          employeeId: 'EMP-2024-005',
-          position: 'Technician',
-          department: 'Service Department',
-          joinedDate: '2023-11-15',
-          specialization: ['Paint & Body', 'Detailing'],
-          completedServices: 42,
-          status: 'on-leave',
-        },
-      ];
+      try {
+        // Fetch employees from admin API
+        const { adminService } = await import('@/lib/adminService');
+        const response = await adminService.getAllEmployees();
+        
+        // Transform backend employee data to match frontend interface
+        const transformedEmployees = response.data.map((emp: any, index: number) => ({
+          id: emp.id,
+          name: `${emp.firstName} ${emp.lastName}`,
+          email: emp.email,
+          phone: '', // Not available in backend DTO
+          employeeId: `EMP-${emp.id}`,
+          position: emp.role,
+          department: 'Service Department', // Default value
+          joinedDate: emp.joinedDate,
+          specialization: [], // Not available in backend DTO
+          completedServices: 0, // Not available in backend DTO
+          status: 'active' as 'active' | 'on-leave' | 'inactive', // Default to active
+        }));
 
-      setEmployees(mockEmployees);
-      setLoading(false);
+        setEmployees(transformedEmployees);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+        // Fallback to mock data on error
+        const mockEmployees: Employee[] = [
+          {
+            id: 1,
+            name: 'Mike Wilson',
+            email: 'mike.wilson@automobile.com',
+            phone: '+1 234-567-9001',
+            employeeId: 'EMP-2024-001',
+            position: 'Senior Technician',
+            department: 'Service Department',
+            joinedDate: '2022-03-15',
+            specialization: ['Engine Repair', 'Brake Systems', 'Electrical'],
+            completedServices: 156,
+            status: 'active',
+          },
+        ];
+        setEmployees(mockEmployees);
+        setLoading(false);
+      }
     };
 
     fetchEmployees();

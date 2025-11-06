@@ -23,44 +23,56 @@ export default function AdminProjectsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Import mock projects
-      const { mockProjects } = await import('@/data/mockData');
-      
-      // Mock employees with availability status
-      const mockEmployees: Employee[] = [
-        {
-          id: 1,
-          name: 'Robert Brown',
-          position: 'Master Technician',
-          isAvailable: true,
-          currentProjects: 1,
-        },
-        {
-          id: 2,
-          name: 'James Miller',
-          position: 'Senior Technician',
-          isAvailable: true,
-          currentProjects: 1,
-        },
-        {
-          id: 3,
-          name: 'David Smith',
-          position: 'Technician',
-          isAvailable: false,
-          currentProjects: 3,
-        },
-        {
-          id: 4,
-          name: 'Carlos Rodriguez',
-          position: 'Master Technician',
-          isAvailable: true,
-          currentProjects: 0,
-        },
-      ];
+      try {
+        // Fetch projects from admin API
+        const { adminService } = await import('@/lib/adminService');
+        const projectsResponse = await adminService.getAllProjects();
+        const employeesResponse = await adminService.getAllEmployees();
+        
+        // Transform backend project data to match frontend interface
+        const transformedProjects = projectsResponse.data.map((proj: any) => ({
+          id: proj.projectId,
+          taskName: proj.name,
+          description: proj.description || '',
+          vehicleNumber: '', // Not available in backend DTO
+          vehicleType: '', // Not available in backend DTO
+          startDate: proj.startDate,
+          completedDate: proj.endDate,
+          status: proj.status,
+          estimatedCost: null, // Not available in backend DTO
+          notes: '', // Not available in backend DTO
+          assignedEmployee: null, // Will be populated if needed
+        }));
 
-      setProjects(mockProjects);
-      setEmployees(mockEmployees);
-      setLoading(false);
+        // Transform backend employee data to match frontend interface
+        const transformedEmployees = employeesResponse.data.map((emp: any) => ({
+          id: emp.id,
+          name: `${emp.firstName} ${emp.lastName}`,
+          position: emp.role,
+          isAvailable: true, // Default to available
+          currentProjects: 0, // Default to 0
+        }));
+
+        setProjects(transformedProjects);
+        setEmployees(transformedEmployees);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Fallback to mock data on error
+        const { mockProjects } = await import('@/data/mockData');
+        const mockEmployees: Employee[] = [
+          {
+            id: 1,
+            name: 'Robert Brown',
+            position: 'Master Technician',
+            isAvailable: true,
+            currentProjects: 1,
+          },
+        ];
+        setProjects(mockProjects);
+        setEmployees(mockEmployees);
+        setLoading(false);
+      }
     };
 
     fetchData();
