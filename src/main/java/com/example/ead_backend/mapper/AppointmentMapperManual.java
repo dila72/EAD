@@ -4,6 +4,9 @@ import com.example.ead_backend.dto.AppointmentDTO;
 import com.example.ead_backend.dto.EmployeeDTO;
 import com.example.ead_backend.model.entity.Appointment;
 import com.example.ead_backend.model.entity.Employee;
+import com.example.ead_backend.model.entity.User;
+import com.example.ead_backend.repository.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +16,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppointmentMapperManual implements AppointmentMapper {
 
+    @Autowired
+    private UserRepo userRepo;
+
     @Override
     public AppointmentDTO toDTO(Appointment entity) {
         if (entity == null) return null;
@@ -20,6 +26,20 @@ public class AppointmentMapperManual implements AppointmentMapper {
         dto.setAppointmentId(entity.getAppointmentId());
         dto.setService(entity.getService());
         dto.setCustomerId(entity.getCustomerId());
+        
+        // Fetch and set customer name from User entity
+        if (entity.getCustomerId() != null) {
+            try {
+                Long userId = Long.parseLong(entity.getCustomerId());
+                userRepo.findById(userId).ifPresent(user -> {
+                    String fullName = user.getFirstName() + " " + user.getLastName();
+                    dto.setCustomerName(fullName.trim());
+                });
+            } catch (NumberFormatException e) {
+                // If customerId is not a valid Long, skip customer name
+            }
+        }
+        
         dto.setVehicleId(entity.getVehicleId());
         dto.setVehicleNo(entity.getVehicleNo());
         dto.setDate(entity.getDate());
