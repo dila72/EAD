@@ -5,22 +5,24 @@
 
 import { appointmentService } from './appointmentService';
 import { projectService } from './projectService';
+import { vehicleApi } from '../vehicleApi';
 import { DashboardStats } from '@/types/dashboard.types';
 
 export const dashboardService = {
   /**
    * Get dashboard statistics for a customer
-   * Fetches appointments and projects, then computes stats
+   * Fetches appointments, projects, and vehicles, then computes stats
    */
   getDashboardStats: async (customerId?: string): Promise<DashboardStats> => {
     try {
-      // Fetch all appointments and projects in parallel
-      const [appointments, projects] = await Promise.all([
+      // Fetch all data in parallel
+      const [appointments, projects, vehicles] = await Promise.all([
         appointmentService.getAllAppointments(),
-        projectService.getAllProjects()
+        projectService.getAllProjects(),
+        vehicleApi.getAllVehicles()
       ]);
 
-      // Filter by customer if provided
+      // Filter by customer if provided (though APIs should already return only user's data)
       const customerAppointments = customerId 
         ? appointments.filter(a => a.customerId === customerId)
         : appointments;
@@ -28,6 +30,9 @@ export const dashboardService = {
       const customerProjects = customerId
         ? projects.filter(p => p.customerId === customerId)
         : projects;
+
+      // Vehicle API already returns only customer's vehicles
+      const totalVehicles = vehicles.length;
 
       // Calculate stats
       const upcomingAppointments = customerAppointments.filter(
@@ -41,8 +46,13 @@ export const dashboardService = {
       ).length;
 
       const ongoingProjects = customerProjects.filter(
-        p => p.status.toLowerCase() === 'ongoing' || 
-             p.status.toLowerCase() === 'in progress'
+        p => {
+          const statusLower = p.status.toLowerCase();
+          return statusLower === 'ongoing' || 
+                 statusLower === 'in progress' ||
+                 statusLower === 'in_progress' ||
+                 statusLower === 'pending';
+        }
       ).length;
 
       const completedProjects = customerProjects.filter(
@@ -50,7 +60,7 @@ export const dashboardService = {
       ).length;
 
       return {
-        totalVehicles: 0, // Vehicle count should come from vehicle API
+        totalVehicles,
         upcomingAppointments,
         ongoingProjects,
         completedAppointments,
@@ -77,34 +87,54 @@ export const dashboardService = {
    * Get upcoming appointments for dashboard display
    */
   getUpcomingAppointments: async (customerId?: string, limit: number = 4) => {
-    const appointments = await appointmentService.getAllAppointments();
-    const filtered = customerId 
-      ? appointments.filter(a => a.customerId === customerId)
-      : appointments;
-    
-    return filtered
-      .filter(a => 
-        a.status.toLowerCase() === 'upcoming' || 
-        a.status.toLowerCase() === 'pending' ||
-        a.status.toLowerCase() === 'approved'
-      )
-      .slice(0, limit);
+    try {
+      const appointments = await appointmentService.getAllAppointments();
+      const filtered = customerId 
+        ? appointments.filter(a => a.customerId === customerId)
+        : appointments;
+      
+      return filtered
+        .filter(a => {
+          const statusLower = a.status.toLowerCase();
+          return statusLower === 'upcoming' || 
+                 statusLower === 'pending' ||
+                 statusLower === 'approved';
+        })
+        .slice(0, limit);
+    } catch (error) {
+      console.error('Failed to fetch upcoming appointments:', error);
+      return [];
+    }
   },
 
   /**
    * Get ongoing projects for dashboard display
    */
   getOngoingProjects: async (customerId?: string, limit: number = 4) => {
-    const projects = await projectService.getAllProjects();
-    const filtered = customerId
-      ? projects.filter(p => p.customerId === customerId)
-      : projects;
-    
-    return filtered
-      .filter(p => 
-        p.status.toLowerCase() === 'ongoing' || 
-        p.status.toLowerCase() === 'in progress'
-      )
-      .slice(0, limit);
+    try {
+      const projects = await projectService.getAllProjects();
+      console.log('All projects fetched:', projects); // Debug log
+      
+      const filtered = customerId
+        ? projects.filter(p => p.customerId === customerId)
+        : projects;
+      
+      console.log('Filtered projects:', filtered); // Debug log
+      
+      const ongoing = filtered.filter(p => {
+        const statusLower = p.status.toLowerCase();
+        console.log('Project:', p.taskName, 'status:', p.status, 'lowercase:', statusLower); // Debug log
+        return statusLower === 'ongoing' || 
+               statusLower === 'in progress' ||
+               statusLower === 'in_progress' ||
+               statusLower === 'pending';
+      });
+      
+      console.log('Ongoing projects:', ongoing); // Debug log
+      return ongoing.slice(0, limit);
+    } catch (error) {
+      console.error('Failed to fetch ongoing projects:', error);
+      return [];
+    }
   }
 };

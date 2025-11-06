@@ -141,106 +141,123 @@ export default function MyProjects() {
           </div>
 
           {/* Ongoing Projects */}
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg md:text-xl font-bold">Ongoing Projects</h3>
-            <button
-              onClick={() => setShowNewForm(v => !v)}
-              className="bg-orange-400 hover:bg-orange-500 text-white px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-medium transition-colors"
-            >
-              {showNewForm ? 'Close' : '+ New'}
-            </button>
-          </div>
+          {!showNewForm && (
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg md:text-xl font-bold">Ongoing Projects</h3>
+              <button
+                onClick={() => setShowNewForm(true)}
+                className="bg-orange-400 hover:bg-orange-500 text-white px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-medium transition-colors"
+              >
+                + New
+              </button>
+            </div>
+          )}
 
           {showNewForm && (
-            <div className="bg-white rounded-lg shadow-md p-4 md:p-5 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col">
-                  <label className="text-sm text-gray-600 mb-1">Project Name</label>
-                  <input
-                    type="text"
-                    className="border rounded px-3 py-2"
-                    value={newName}
-                    onChange={e => setNewName(e.target.value)}
-                    placeholder="Enter project name"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm text-gray-600 mb-1">Vehicle Model</label>
-                  <input
-                    type="text"
-                    className="border rounded px-3 py-2"
-                    value={newVehicleModel}
-                    onChange={e => setNewVehicleModel(e.target.value)}
-                    placeholder="e.g., Toyota Camry 2020"
-                  />
-                </div>
-                <div className="flex flex-col md:col-span-2">
-                  <label className="text-sm text-gray-600 mb-1">Project Description</label>
-                  <textarea
-                    className="border rounded px-3 py-2 min-h-[120px]"
-                    value={newDescription}
-                    onChange={e => setNewDescription(e.target.value)}
-                    placeholder="Describe what kind of project you want"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm text-gray-600 mb-1">Start Date</label>
-                  <input
-                    type="date"
-                    className="border rounded px-3 py-2"
-                    value={newStartDate}
-                    onChange={e => setNewStartDate(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mt-4 flex gap-3">
-                <button
-                  onClick={handleCreateProject}
-                  disabled={submitting}
-                  className="bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white px-4 py-2 rounded"
-                >
-                  {submitting ? 'Creating...' : 'Create Project'}
-                </button>
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg md:text-xl font-bold">Create New Project</h3>
                 <button
                   onClick={() => setShowNewForm(false)}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded"
+                  className="text-gray-500 hover:text-gray-700 text-sm font-medium"
                 >
-                  Cancel
+                  ✕ Close
                 </button>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-4 md:p-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="text-sm text-gray-600 mb-1">Project Name</label>
+                    <input
+                      type="text"
+                      className="border rounded px-3 py-2"
+                      value={newName}
+                      onChange={e => setNewName(e.target.value)}
+                      placeholder="Enter project name"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-sm text-gray-600 mb-1">Vehicle Model</label>
+                    <input
+                      type="text"
+                      className="border rounded px-3 py-2"
+                      value={newVehicleModel}
+                      onChange={e => setNewVehicleModel(e.target.value)}
+                      placeholder="e.g., Toyota Camry 2020"
+                    />
+                  </div>
+                  <div className="flex flex-col md:col-span-2">
+                    <label className="text-sm text-gray-600 mb-1">Project Description</label>
+                    <textarea
+                      className="border rounded px-3 py-2 min-h-[120px]"
+                      value={newDescription}
+                      onChange={e => setNewDescription(e.target.value)}
+                      placeholder="Describe what kind of project you want"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-sm text-gray-600 mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      className="border rounded px-3 py-2"
+                      value={newStartDate}
+                      onChange={e => setNewStartDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 flex gap-3">
+                  <button
+                    onClick={handleCreateProject}
+                    disabled={submitting}
+                    className="bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white px-4 py-2 rounded"
+                  >
+                    {submitting ? 'Creating...' : 'Create Project'}
+                  </button>
+                  <button
+                    onClick={() => setShowNewForm(false)}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {ongoingProjects.length === 0 ? (
-            <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-6 text-center text-gray-500 text-sm md:text-base">
-              No ongoing projects
-            </div>
-          ) : (
-            <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
-            <table className="w-full text-left text-sm md:text-base">
-              <thead className="bg-gray-100 text-gray-700">
-                <tr>
-                  <th className="p-4 font-semibold">ID</th>
-                  <th className="p-4 font-semibold">Task</th>
-                  <th className="p-4 font-semibold">Vehicle Model</th>
-                  <th className="p-4 font-semibold">Date</th>
-                  <th className="p-4 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ongoingProjects.map((project) => (
-                  <tr key={project.id} className="border-t hover:bg-gray-50 transition-colors">
-                    <td className="p-3 md:p-4">{project.id}</td>
-                    <td className="p-3 md:p-4">{project.taskName}</td>
-                    <td className="p-3 md:p-4">{getVehicleModel(project)}</td>
-                    <td className="p-3 md:p-4">{formatDate(project.startDate)}</td>
-                    <td className="p-3 md:p-4 text-orange-500 font-semibold">{project.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {!showNewForm && (
+            <>
+              {ongoingProjects.length === 0 ? (
+                <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-6 text-center text-gray-500 text-sm md:text-base">
+                  No ongoing projects
+                </div>
+              ) : (
+                <div className="overflow-x-auto bg-white rounded-lg shadow-md mb-8">
+                <table className="w-full text-left text-sm md:text-base">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="p-4 font-semibold">ID</th>
+                      <th className="p-4 font-semibold">Task</th>
+                      <th className="p-4 font-semibold">Vehicle Model</th>
+                      <th className="p-4 font-semibold">Date</th>
+                      <th className="p-4 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ongoingProjects.map((project) => (
+                      <tr key={project.id} className="border-t hover:bg-gray-50 transition-colors">
+                        <td className="p-3 md:p-4">{project.id}</td>
+                        <td className="p-3 md:p-4">{project.taskName}</td>
+                        <td className="p-3 md:p-4">{getVehicleModel(project)}</td>
+                        <td className="p-3 md:p-4">{formatDate(project.startDate)}</td>
+                        <td className="p-3 md:p-4 text-orange-500 font-semibold">{project.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            </>
+          )}
 
           {/* Completed Projects */}
           <h3 className="text-lg font-bold mb-3 lg:text-xl ">Completed Projects</h3>

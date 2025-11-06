@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User } from 'lucide-react';
+import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User, RefreshCw } from 'lucide-react';
 import { dashboardService } from '@/lib/api/dashboardService';
 import { appointmentService, type Appointment } from '@/lib/api/appointmentService';
 import { projectService, type Project } from '@/lib/api/projectService';
@@ -13,9 +13,18 @@ export default function CustomerDashboard() {
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
+    
+    // Set up an interval to refresh data periodically (every 30 seconds)
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 30000);
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const loadDashboardData = async () => {
@@ -23,12 +32,18 @@ export default function CustomerDashboard() {
       setLoading(true);
       setError(null);
 
+      console.log('Loading dashboard data...'); // Debug log
+
       // Fetch dashboard data in parallel
       const [statsData, appointmentsData, projectsData] = await Promise.all([
         dashboardService.getDashboardStats(),
         dashboardService.getUpcomingAppointments(undefined, 4),
         dashboardService.getOngoingProjects(undefined, 4)
       ]);
+
+      console.log('Dashboard stats:', statsData); // Debug log
+      console.log('Upcoming appointments:', appointmentsData); // Debug log
+      console.log('Ongoing projects:', projectsData); // Debug log
 
       setStats(statsData);
       setUpcomingAppointments(appointmentsData);
@@ -39,6 +54,12 @@ export default function CustomerDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboardData();
+    setRefreshing(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -99,9 +120,19 @@ export default function CustomerDashboard() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Customer Dashboard</h1>
-        <p className="text-gray-600">Here's what's happening with your vehicles and services</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Customer Dashboard</h1>
+          <p className="text-gray-600">Here's what's happening with your vehicles and services</p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       {/* Stats Cards */}

@@ -1,33 +1,54 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Clock, Car, ArrowLeft, Check } from 'lucide-react';
+import { Calendar, Clock, Car, ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { appointmentService } from '@/lib/api/appointmentService';
+import { vehicleApi } from '@/lib/vehicleApi';
+import * as serviceApi from '@/lib/api/serviceApi';
+import { Service } from '@/types/service.types';
+import { Vehicle } from '@/types/vehicle.types';
 
 export default function BookAppointmentPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [selectedService, setSelectedService] = useState('');
-  const [selectedVehicle, setSelectedVehicle] = useState('');
+  const [selectedService, setSelectedService] = useState<number | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
 
-  // Mock data
-  const services = [
-    { id: 'SRV001', name: 'Oil Change', duration: '30 min', price: 50 },
-    { id: 'SRV002', name: 'Brake Inspection', duration: '45 min', price: 75 },
-    { id: 'SRV003', name: 'Tire Rotation', duration: '30 min', price: 40 },
-    { id: 'SRV004', name: 'Engine Diagnostics', duration: '1 hour', price: 100 },
-    { id: 'SRV005', name: 'Air Conditioning Service', duration: '1.5 hours', price: 120 },
-    { id: 'SRV006', name: 'Battery Replacement', duration: '20 min', price: 150 },
-  ];
+  // Real data from API
+  const [services, setServices] = useState<Service[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const vehicles = [
-    { id: 'VEH001', number: 'ABC-2345', make: 'Toyota', model: 'Camry', year: 2020 },
-    { id: 'VEH002', number: 'CBB-5475', make: 'Honda', model: 'Civic', year: 2019 },
-    { id: 'VEH003', number: 'XYZ-7890', make: 'Ford', model: 'F-150', year: 2021 },
-  ];
+  // Fetch services and vehicles on mount
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch active services and customer vehicles in parallel
+      const [servicesData, vehiclesData] = await Promise.all([
+        serviceApi.getActiveServices(),
+        vehicleApi.getAllVehicles(),
+      ]);
+
+      setServices(servicesData);
+      setVehicles(vehiclesData);
+    } catch (err: any) {
+      console.error('Failed to fetch data:', err);
+      setError(err?.response?.data?.message || 'Failed to load booking data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Generate next 14 days
   const generateDates = () => {
@@ -98,29 +119,41 @@ export default function BookAppointmentPage() {
     const serviceObj = services.find(s => s.id === selectedService);
     const vehicleObj = vehicles.find(v => v.id === selectedVehicle);
 
-
+    if (!serviceObj || !vehicleObj) {
+      window.alert('Invalid service or vehicle selection');
+      return;
+    }
 
     const start24 = parseTimeTo24(selectedTimeSlot);
-    const end24 = addMinutes(start24, 30); // assume 30 min slot
+    // Calculate end time based on service duration
+    const end24 = addMinutes(start24, serviceObj.estimatedDurationMinutes);
 
+    // Backend expects AppointmentDTO with exact field names and types
     const payload = {
-      service: serviceObj?.name || selectedService,
-      vehicleNo: vehicleObj?.number || selectedVehicle,
-      date: selectedDate,
+      service: serviceObj.name,
+      vehicleNo: vehicleObj.licensePlate,
+      vehicleId: vehicleObj.id.toString(),
+      date: selectedDate, // Already in YYYY-MM-DD format from date picker
       startTime: start24,
       endTime: end24,
-      status: 'UPCOMING'
+      status: 'UPCOMING' // Must match AppointmentStatus enum: UPCOMING, COMPLETED, or CANCELLED
+      // customerId will be set by backend from authenticated user
     };
 
     try {
+      setSubmitting(true);
+      console.log('Booking appointment with payload:', payload);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore Sending backend AppointmentDTO shape
       await appointmentService.createAppointment(payload as any);
       window.alert('Appointment booked successfully!');
       router.push('/customer/my-appointments');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Booking failed', err);
-      window.alert('Failed to book appointment');
+      const errorMessage = err?.response?.data?.message || err?.response?.data || 'Failed to book appointment';
+      window.alert(errorMessage);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -130,6 +163,72 @@ export default function BookAppointmentPage() {
     if (step === 3) return selectedTimeSlot;
     return false;
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading booking information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">Error</p>
+          <p className="text-sm">{error}</p>
+        </div>
+        <button
+          onClick={fetchData}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  // No vehicles state
+  if (vehicles.length === 0) {
+    return (
+      <div className="p-6">
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">No Vehicles Found</p>
+          <p className="text-sm">You need to add a vehicle before booking an appointment.</p>
+        </div>
+        <button
+          onClick={() => router.push('/customer/vehicles')}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Add Vehicle
+        </button>
+      </div>
+    );
+  }
+
+  // No services state
+  if (services.length === 0) {
+    return (
+      <div className="p-6">
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">No Services Available</p>
+          <p className="text-sm">There are currently no active services available for booking.</p>
+        </div>
+        <button
+          onClick={() => router.back()}
+          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -197,18 +296,32 @@ export default function BookAppointmentPage() {
                   }`}
                 >
                   <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{service.name}</h3>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {service.duration}
-                        </span>
-                        <span className="font-semibold text-green-600">${service.price}</span>
+                    <div className="flex-1">
+                      <div className="flex items-start gap-3">
+                        {service.imageUrl && (
+                          <img 
+                            src={service.imageUrl} 
+                            alt={service.name}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">{service.name}</h3>
+                          {service.description && (
+                            <p className="text-xs text-gray-500 mt-1">{service.description}</p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {serviceApi.formatDuration(service.estimatedDurationMinutes)}
+                            </span>
+                            <span className="font-semibold text-green-600">${service.price.toFixed(2)}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     {selectedService === service.id && (
-                      <Check className="w-5 h-5 text-blue-600" />
+                      <Check className="w-5 h-5 text-blue-600 ml-2" />
                     )}
                   </div>
                 </div>
@@ -232,13 +345,24 @@ export default function BookAppointmentPage() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <Car className="w-6 h-6 text-gray-600" />
-                      </div>
+                      {vehicle.imageUrl ? (
+                        <img 
+                          src={vehicle.imageUrl} 
+                          alt={vehicle.licensePlate}
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <Car className="w-6 h-6 text-gray-600" />
+                        </div>
+                      )}
                       <div>
-                        <h3 className="font-semibold text-gray-900">{vehicle.number}</h3>
+                        <h3 className="font-semibold text-gray-900">{vehicle.licensePlate}</h3>
                         <p className="text-sm text-gray-600">
-                          {vehicle.make} {vehicle.model} {vehicle.year}
+                          {vehicle.model} ({vehicle.year})
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {vehicle.color} • VIN: {vehicle.vin.slice(-6)}
                         </p>
                       </div>
                     </div>
@@ -329,6 +453,7 @@ export default function BookAppointmentPage() {
         <button
           onClick={() => step === 1 ? router.back() : setStep(step - 1)}
           className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={submitting}
         >
           {step === 1 ? 'Cancel' : 'Previous'}
         </button>
@@ -343,10 +468,11 @@ export default function BookAppointmentPage() {
         ) : (
           <button
             onClick={handleBookAppointment}
-            disabled={!canProceed()}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            disabled={!canProceed() || submitting}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Confirm Booking
+            {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+            {submitting ? 'Booking...' : 'Confirm Booking'}
           </button>
         )}
       </div>
@@ -362,10 +488,28 @@ export default function BookAppointmentPage() {
                 <span className="font-medium">{services.find(s => s.id === selectedService)?.name}</span>
               </div>
             )}
+            {selectedService && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Price:</span>
+                <span className="font-medium text-green-600">
+                  ${services.find(s => s.id === selectedService)?.price.toFixed(2)}
+                </span>
+              </div>
+            )}
+            {selectedService && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Duration:</span>
+                <span className="font-medium">
+                  {services.find(s => s.id === selectedService) && 
+                    serviceApi.formatDuration(services.find(s => s.id === selectedService)!.estimatedDurationMinutes)
+                  }
+                </span>
+              </div>
+            )}
             {selectedVehicle && (
               <div className="flex justify-between">
                 <span className="text-gray-600">Vehicle:</span>
-                <span className="font-medium">{vehicles.find(v => v.id === selectedVehicle)?.number}</span>
+                <span className="font-medium">{vehicles.find(v => v.id === selectedVehicle)?.licensePlate}</span>
               </div>
             )}
             {selectedDate && (
