@@ -1,6 +1,7 @@
 package com.example.ead_backend.service;
 
 import java.util.List;
+import java.time.LocalDate;
 
 import com.example.ead_backend.dto.AppointmentDTO;
 
@@ -12,8 +13,14 @@ public interface AppointmentService {
     List<AppointmentDTO> getAllAppointments();
 
     List<AppointmentDTO> getAppointmentsByCustomerId(String customerId);
+    
+    List<AppointmentDTO> getAppointmentsByEmployeeId(Long employeeId);
 
     AppointmentDTO updateAppointment(String id, AppointmentDTO dto);
+    
+    AppointmentDTO assignEmployeeToAppointment(String appointmentId, Long employeeId);
 
     void deleteAppointment(String id);
+
+    List<String> getBookedStartTimes(LocalDate date);
 }

@@ -6,9 +6,12 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.ead_backend.dto.AppointmentDTO;
 import com.example.ead_backend.service.AppointmentService;
+import java.util.Map;
+import java.time.LocalDate;
 
 import java.util.List;
 import java.security.Principal;
+
 
 @RestController
 @Slf4j
@@ -59,6 +62,16 @@ public class AppointmentController {
         return appointmentService.getAllAppointments();
     }
 
+    @GetMapping("/availability")
+    public Map<String, Object> getAvailability(@RequestParam("date") String dateStr) {
+        LocalDate date = LocalDate.parse(dateStr);
+        List<String> booked = appointmentService.getBookedStartTimes(date);
+        return Map.of(
+            "date", dateStr,
+            "booked", booked
+        );
+    }
+
     @PutMapping("/{id}")
     public AppointmentDTO update(@PathVariable String id, @RequestBody AppointmentDTO dto, Principal principal) {
         // Verify user owns the appointment they're trying to update
@@ -88,5 +101,30 @@ public class AppointmentController {
 
         appointmentService.deleteAppointment(id);
         log.info("Appointment {} deleted successfully", id);
+    }
+
+    @PutMapping("/{id}/assign-employee")
+    public AppointmentDTO assignEmployee(@PathVariable String id, @RequestBody Map<String, Object> request) {
+        Object employeeIdObj = request.get("employeeId");
+        if (employeeIdObj == null) {
+            log.error("Employee ID is null in request: {}", request);
+            throw new RuntimeException("Employee ID is required");
+        }
+        
+        Long employeeId;
+        if (employeeIdObj instanceof Number) {
+            employeeId = ((Number) employeeIdObj).longValue();
+        } else if (employeeIdObj instanceof String) {
+            try {
+                employeeId = Long.parseLong((String) employeeIdObj);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Invalid employee ID format: " + employeeIdObj);
+            }
+        } else {
+            throw new RuntimeException("Invalid employee ID type: " + employeeIdObj.getClass().getName());
+        }
+        
+        log.info("Assigning employee {} to appointment {}", employeeId, id);
+        return appointmentService.assignEmployeeToAppointment(id, employeeId);
     }
 }
