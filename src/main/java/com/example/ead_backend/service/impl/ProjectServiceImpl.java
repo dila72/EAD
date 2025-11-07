@@ -41,7 +41,18 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDTO> getAllProjects() {
         return projectRepository.findAll()
                 .stream()
-                .map(projectMapper::toDTO)
+                .map(project -> {
+                    ProjectDTO dto = projectMapper.toDTO(project);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(project.getProjectId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -49,7 +60,18 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDTO> getProjectsByCustomerId(String customerId) {
         return projectRepository.findByCustomerId(customerId)
                 .stream()
-                .map(projectMapper::toDTO)
+                .map(project -> {
+                    ProjectDTO dto = projectMapper.toDTO(project);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(project.getProjectId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

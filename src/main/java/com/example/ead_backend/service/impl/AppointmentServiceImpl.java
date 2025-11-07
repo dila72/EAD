@@ -61,7 +61,18 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<AppointmentDTO> getAllAppointments() {
         return appointmentRepository.findAll()
                 .stream()
-                .map(appointmentMapper::toDTO)
+                .map(appointment -> {
+                    AppointmentDTO dto = appointmentMapper.toDTO(appointment);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(appointment.getAppointmentId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -69,7 +80,18 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<AppointmentDTO> getAppointmentsByCustomerId(String customerId) {
         return appointmentRepository.findByCustomerId(customerId)
                 .stream()
-                .map(appointmentMapper::toDTO)
+                .map(appointment -> {
+                    AppointmentDTO dto = appointmentMapper.toDTO(appointment);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(appointment.getAppointmentId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
