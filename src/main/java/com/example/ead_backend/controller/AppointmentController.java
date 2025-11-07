@@ -2,19 +2,13 @@ package com.example.ead_backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.ead_backend.dto.AppointmentDTO;
-import com.example.ead_backend.dto.AssignAppointmentRequest;
-import com.example.ead_backend.dto.EmployeeAvailabilityDTO;
 import com.example.ead_backend.service.AppointmentService;
 import java.util.Map;
 import java.time.LocalDate;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.security.Principal;
 
