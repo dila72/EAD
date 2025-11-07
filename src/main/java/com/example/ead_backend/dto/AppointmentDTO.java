@@ -17,4 +17,5 @@ public class AppointmentDTO {
     private String endTime;
     private AppointmentStatus status;
     private EmployeeDTO employee;
+    private Integer progressPercentage;  // Progress percentage for the appointment
 }

@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 public class ProgressResponse {
 
     private Long id;
-    private Long appointmentId;
+    private String appointmentId;
     private String stage;
     private Integer percentage;
     private String remarks;

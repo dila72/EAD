@@ -24,12 +24,12 @@ public class ProgressViewController {
     /**
      * Get all progress updates for an appointment.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @return list of progress responses
      */
     @GetMapping("/{appointmentId}")
     public ResponseEntity<List<ProgressResponse>> getProgressHistory(
-            @PathVariable Long appointmentId) {
+            @PathVariable String appointmentId) {
 
         log.info("Fetching progress history for appointment {}", appointmentId);
 
@@ -41,12 +41,12 @@ public class ProgressViewController {
     /**
      * Get the latest progress update for an appointment.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @return the latest progress response
      */
     @GetMapping("/{appointmentId}/latest")
     public ResponseEntity<ProgressResponse> getLatestProgress(
-            @PathVariable Long appointmentId) {
+            @PathVariable String appointmentId) {
 
         log.info("Fetching latest progress for appointment {}", appointmentId);
 
@@ -64,12 +64,12 @@ public class ProgressViewController {
     /**
      * Get the overall progress percentage for an appointment.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @return the progress percentage
      */
     @GetMapping("/{appointmentId}/percentage")
     public ResponseEntity<Integer> getProgressPercentage(
-            @PathVariable Long appointmentId) {
+            @PathVariable String appointmentId) {
 
         log.info("Calculating progress percentage for appointment {}", appointmentId);
 

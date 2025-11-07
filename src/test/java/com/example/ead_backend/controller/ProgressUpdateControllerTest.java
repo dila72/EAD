@@ -55,7 +55,7 @@ class ProgressUpdateControllerTest {
 
         testResponse = ProgressResponse.builder()
                 .id(1L)
-                .appointmentId(100L)
+                .appointmentId("100")
                 .stage("Inspection")
                 .percentage(50)
                 .remarks("Initial inspection completed")
@@ -68,7 +68,7 @@ class ProgressUpdateControllerTest {
     @WithMockUser
     void testUpdateProgress_Success() throws Exception {
         // Arrange
-        when(progressService.createOrUpdateProgress(anyLong(), any(ProgressUpdateRequest.class), anyLong()))
+        when(progressService.createOrUpdateProgress(anyString(), any(ProgressUpdateRequest.class), anyLong()))
                 .thenReturn(testResponse);
 
         // Act & Assert
@@ -149,7 +149,7 @@ class ProgressUpdateControllerTest {
     @WithMockUser
     void testUpdateStatus_Success() throws Exception {
         // Arrange
-        when(progressService.createOrUpdateProgress(anyLong(), any(ProgressUpdateRequest.class), anyLong()))
+        when(progressService.createOrUpdateProgress(anyString(), any(ProgressUpdateRequest.class), anyLong()))
                 .thenReturn(testResponse);
 
         // Act & Assert
@@ -168,21 +168,21 @@ class ProgressUpdateControllerTest {
         // Arrange
         ProgressResponse response1 = ProgressResponse.builder()
                 .id(1L)
-                .appointmentId(100L)
+                .appointmentId("100")
                 .stage("Inspection")
                 .percentage(25)
                 .build();
 
         ProgressResponse response2 = ProgressResponse.builder()
                 .id(2L)
-                .appointmentId(100L)
+                .appointmentId("100")
                 .stage("Repair")
                 .percentage(75)
                 .build();
 
         List<ProgressResponse> responses = Arrays.asList(response1, response2);
 
-        when(progressService.getProgressForAppointment(100L)).thenReturn(responses);
+        when(progressService.getProgressForAppointment("100")).thenReturn(responses);
 
         // Act & Assert
         mockMvc.perform(get("/api/customer/progress/100")
@@ -201,7 +201,7 @@ class ProgressUpdateControllerTest {
     void testGetLatestProgress_Success() throws Exception {
         // Arrange
         List<ProgressResponse> responses = Arrays.asList(testResponse);
-        when(progressService.getProgressForAppointment(100L)).thenReturn(responses);
+        when(progressService.getProgressForAppointment("100")).thenReturn(responses);
 
         // Act & Assert
         mockMvc.perform(get("/api/customer/progress/100/latest")
@@ -217,7 +217,7 @@ class ProgressUpdateControllerTest {
     @WithMockUser
     void testGetLatestProgress_NotFound() throws Exception {
         // Arrange
-        when(progressService.getProgressForAppointment(100L)).thenReturn(Arrays.asList());
+        when(progressService.getProgressForAppointment("100")).thenReturn(Arrays.asList());
 
         // Act & Assert
         mockMvc.perform(get("/api/customer/progress/100/latest")
@@ -230,7 +230,7 @@ class ProgressUpdateControllerTest {
     @WithMockUser
     void testGetProgressPercentage_Success() throws Exception {
         // Arrange
-        when(progressService.calculateProgressPercentage(100L)).thenReturn(65);
+        when(progressService.calculateProgressPercentage("100")).thenReturn(65);
 
         // Act & Assert
         mockMvc.perform(get("/api/customer/progress/100/percentage")

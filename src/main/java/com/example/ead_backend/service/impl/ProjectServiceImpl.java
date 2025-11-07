@@ -1,6 +1,7 @@
 package com.example.ead_backend.service.impl;
 
 import com.example.ead_backend.service.ProjectService;
+import com.example.ead_backend.service.ProgressCalculationService;
 import com.example.ead_backend.dto.ProjectDTO;
 import com.example.ead_backend.model.entity.Project;
 import com.example.ead_backend.model.entity.Employee;
@@ -20,6 +21,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final EmployeeRepository employeeRepository;
     private final ProjectMapper projectMapper;
+    private final ProgressCalculationService progressCalculationService;
 
     @Override
     public ProjectDTO createProject(ProjectDTO dto) {
@@ -89,7 +91,18 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDTO> getProjectsByEmployeeId(Long employeeId) {
         return projectRepository.findByEmployeeId(employeeId)
                 .stream()
-                .map(projectMapper::toDTO)
+                .map(project -> {
+                    ProjectDTO dto = projectMapper.toDTO(project);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(project.getProjectId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 }

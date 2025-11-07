@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class ProgressUpdateMessage {
 
-    private Long appointmentId;
+    private String appointmentId;
     private String stage;
     private Integer percentage;
     private String remarks;

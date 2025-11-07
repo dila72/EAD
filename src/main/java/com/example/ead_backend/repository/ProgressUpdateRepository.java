@@ -16,8 +16,8 @@ public interface ProgressUpdateRepository extends JpaRepository<ProgressUpdate, 
      * Find all progress updates for a specific appointment ordered by creation
      * date.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @return list of progress updates
      */
-    List<ProgressUpdate> findByAppointmentIdOrderByCreatedAtAsc(Long appointmentId);
+    List<ProgressUpdate> findByAppointmentIdOrderByCreatedAtAsc(String appointmentId);
 }

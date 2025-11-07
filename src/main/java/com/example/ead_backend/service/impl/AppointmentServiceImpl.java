@@ -1,6 +1,7 @@
 package com.example.ead_backend.service.impl;
 
 import com.example.ead_backend.service.AppointmentService;
+import com.example.ead_backend.service.ProgressCalculationService;
 import com.example.ead_backend.dto.AppointmentDTO;
 import com.example.ead_backend.model.entity.Appointment;
 import com.example.ead_backend.model.entity.Employee;
@@ -31,6 +32,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final EmployeeRepository employeeRepository;
     private final TimeLogRepository timeLogRepository;
     private final AppointmentMapper appointmentMapper;
+    private final ProgressCalculationService progressCalculationService;
 
     @Override
     public AppointmentDTO createAppointment(AppointmentDTO dto) {
@@ -113,7 +115,18 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<AppointmentDTO> getAppointmentsByEmployeeId(Long employeeId) {
         return appointmentRepository.findByEmployeeId(employeeId)
                 .stream()
-                .map(appointmentMapper::toDTO)
+                .map(appointment -> {
+                    AppointmentDTO dto = appointmentMapper.toDTO(appointment);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(appointment.getAppointmentId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

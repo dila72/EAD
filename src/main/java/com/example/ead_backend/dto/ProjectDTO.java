@@ -15,4 +15,5 @@ public class ProjectDTO {
     private LocalDate endDate;
     private ProjectStatus status;
     private EmployeeDTO employee;
+    private Integer progressPercentage;  // Progress percentage for the project
 }
