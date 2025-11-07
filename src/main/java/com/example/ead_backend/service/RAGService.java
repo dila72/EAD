@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class RAGService {
 
     private final ServiceRepository serviceRepository;
-    private final SlotRepository slotRepository;
     private final AppointmentRepository appointmentRepository;
     private final EmployeeRepository employeeRepository;
 
@@ -51,7 +50,8 @@ public class RAGService {
                 context.append(getServicesContext()).append("\n\n");
             }
 
-            if (containsKeywords(lowerQuestion, "slot", "time", "available", "schedule", "appointment", "book", "when")) {
+            if (containsKeywords(lowerQuestion, "slot", "time", "available", "schedule", "appointment", "book",
+                    "when")) {
                 log.debug("Adding available slots context");
                 context.append(getAvailableSlotsContext()).append("\n\n");
             }
@@ -90,7 +90,8 @@ public class RAGService {
         } catch (Exception e) {
             log.error("Error building context: {} - {}", e.getClass().getName(), e.getMessage(), e);
             // Return minimal context in case of error
-            return getCompanyInfo() + "\n\nI apologize, but I'm having trouble accessing detailed information at the moment.";
+            return getCompanyInfo()
+                    + "\n\nI apologize, but I'm having trouble accessing detailed information at the moment.";
         }
     }
 
@@ -158,31 +159,7 @@ public class RAGService {
     }
 
     private String getAvailableSlotsContext() {
-        try {
-            List<ServiceSlot> slots = slotRepository.findAvailableSlots();
-
-            if (slots.isEmpty()) {
-                return "=== AVAILABLE SLOTS ===\nNo available time slots at the moment. Please check back later or contact us directly.";
-            }
-
-            StringBuilder sb = new StringBuilder("=== AVAILABLE TIME SLOTS ===\n");
-
-            // Group slots by date
-            slots.stream()
-                    .collect(Collectors.groupingBy(ServiceSlot::getDate))
-                    .forEach((date, dateSlots) -> {
-                        sb.append(String.format("Date: %s\n", date));
-                        dateSlots.forEach(slot -> {
-                            sb.append(String.format("  - %s\n", slot.getTime()));
-                        });
-                        sb.append("\n");
-                    });
-
-            return sb.toString();
-        } catch (Exception e) {
-            log.error("Error retrieving available slots", e);
-            return "=== AVAILABLE SLOTS ===\nUnable to retrieve available slots at this time.";
-        }
+        return "=== AVAILABLE SLOTS ===\nPlease contact us directly to check available time slots.";
     }
 
     private String getCustomerAppointmentsContext(String customerId) {
