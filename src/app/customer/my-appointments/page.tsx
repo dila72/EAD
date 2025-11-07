@@ -95,29 +95,6 @@ export default function MyAppointments() {
     }
   };
 
-  // Delete a completed appointment (only available in Completed tab)
-  const handleDelete = async (appointmentId?: string) => {
-    if (!appointmentId) {
-      console.error('Attempted to delete appointment with empty id');
-      alert('Unable to delete appointment: invalid id');
-      return;
-    }
-
-    const confirmed = window.confirm('Delete this completed appointment? This action cannot be undone.');
-    if (!confirmed) return;
-
-    try {
-      await appointmentService.deleteAppointment(appointmentId);
-      // Remove from local state
-      setAppointments(prev => prev.filter(a => a.id !== appointmentId));
-      alert('Appointment deleted successfully');
-    } catch (err: unknown) {
-      console.error('Delete failed:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      alert('Failed to delete appointment: ' + (msg || 'Unknown error'));
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -340,20 +317,8 @@ export default function MyAppointments() {
                             );
                           }
                           
-                          // Delete button - show ONLY for completed appointments
-                          if (statusLower === 'completed') {
-                            return (
-                              <button
-                                onClick={() => handleDelete(appointment.id)}
-                                className="text-red-600 hover:text-red-900 transition-colors"
-                              >
-                                Delete
-                              </button>
-                            );
-                          }
-                          
-                          // Show "No actions" for cancelled or any other status
-                          return <span className="text-gray-400 text-sm">No actions</span>;
+                          // No actions for completed or cancelled appointments
+                          return <span className="text-gray-400 text-sm">-</span>;
                         })()}
                       </div>
                     </td>
