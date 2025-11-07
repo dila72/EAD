@@ -276,9 +276,25 @@ export default function MyProjects() {
                           <td className="px-6 py-4 text-sm text-gray-900">{getVehicleModel(project)}</td>
                           <td className="px-6 py-4 text-sm text-gray-900">{formatDate(project.startDate)}</td>
                           <td className="px-6 py-4">
-                            <span className="text-sm font-medium text-gray-700">
-                              {project.progressPercentage ?? 0}%
-                            </span>
+                            <div className="w-full max-w-xs">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-sm font-medium text-gray-700">
+                                  {project.progressPercentage ?? 0}%
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full transition-all duration-500 ${
+                                    (project.progressPercentage ?? 0) === 100
+                                      ? 'bg-green-600'
+                                      : (project.progressPercentage ?? 0) > 50
+                                      ? 'bg-blue-600'
+                                      : 'bg-yellow-500'
+                                  }`}
+                                  style={{ width: `${project.progressPercentage ?? 0}%` }}
+                                ></div>
+                              </div>
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
@@ -332,9 +348,19 @@ export default function MyProjects() {
                         <td className="px-6 py-4 text-sm text-gray-900">{getVehicleModel(project)}</td>
                         <td className="px-6 py-4 text-sm text-gray-900">{formatDate(project.startDate)}</td>
                         <td className="px-6 py-4">
-                          <span className="text-sm font-medium text-gray-700">
-                            {project.progressPercentage ?? 0}%
-                          </span>
+                          <div className="w-full max-w-xs">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium text-gray-700">
+                                {project.progressPercentage ?? 0}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="h-2 rounded-full bg-green-600 transition-all duration-500"
+                                style={{ width: `${project.progressPercentage ?? 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
