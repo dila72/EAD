@@ -1,9 +1,11 @@
 package com.example.ead_backend.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.time.LocalDate;
 
 import com.example.ead_backend.dto.AppointmentDTO;
+import com.example.ead_backend.dto.EmployeeAvailabilityDTO;
 
 public interface AppointmentService {
     AppointmentDTO createAppointment(AppointmentDTO dto);
