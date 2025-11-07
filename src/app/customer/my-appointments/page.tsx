@@ -298,25 +298,9 @@ export default function MyAppointments() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="w-full">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700">
-                            {appointment.progressPercentage ?? 0}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all duration-500 ${
-                              (appointment.progressPercentage ?? 0) === 100
-                                ? 'bg-green-600'
-                                : (appointment.progressPercentage ?? 0) > 50
-                                ? 'bg-blue-600'
-                                : 'bg-yellow-500'
-                            }`}
-                            style={{ width: `${appointment.progressPercentage ?? 0}%` }}
-                          ></div>
-                        </div>
-                      </div>
+                      <span className="text-sm font-medium text-gray-700">
+                        {appointment.progressPercentage ?? 0}%
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(appointment.status)}`}>
