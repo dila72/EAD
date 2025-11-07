@@ -3,7 +3,6 @@ package com.example.ead_backend.service.impl;
 import com.example.ead_backend.service.AppointmentService;
 import com.example.ead_backend.service.ProgressCalculationService;
 import com.example.ead_backend.dto.AppointmentDTO;
-import com.example.ead_backend.dto.EmployeeAvailabilityDTO;
 import com.example.ead_backend.model.entity.Appointment;
 import com.example.ead_backend.model.entity.Employee;
 import com.example.ead_backend.model.entity.TimeLog;
@@ -15,7 +14,6 @@ import com.example.ead_backend.mapper.AppointmentMapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,12 +46,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         // ensure new fields are copied (mapper should handle this if configured)
         entity.setCustomerId(dto.getCustomerId());
         entity.setVehicleId(dto.getVehicleId());
-        
-        // Set status to PENDING if not specified (customer appointments default to pending)
-        if (entity.getStatus() == null) {
-            entity.setStatus(AppointmentStatus.PENDING);
-        }
-        
         Appointment saved = appointmentRepository.save(entity);
         return appointmentMapper.toDTO(saved);
     }
@@ -119,8 +111,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         existing.setService(dto.getService());
-        existing.setCustomerId(dto.getCustomerId());
-        existing.setVehicleId(dto.getVehicleId());
+    existing.setCustomerId(dto.getCustomerId());
+    existing.setVehicleId(dto.getVehicleId());
         existing.setVehicleNo(dto.getVehicleNo());
         existing.setDate(dto.getDate());
         existing.setStartTime(dto.getStartTime());
