@@ -49,17 +49,17 @@ public class EmailService {
      * Send a progress update email using appointment details.
      *
      * @param toEmail       the recipient email
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @param stage         the current stage
      * @param percentage    the progress percentage
      * @param remarks       additional remarks
      */
-    public void sendProgressUpdateNotification(String toEmail, Long appointmentId, String stage, Integer percentage,
+    public void sendProgressUpdateNotification(String toEmail, String appointmentId, String stage, Integer percentage,
             String remarks) {
         String subject = "Progress Update - Appointment #" + appointmentId;
         String body = String.format(
                 "Dear Customer,\n\n" +
-                        "Your appointment #%d has been updated:\n\n" +
+                        "Your appointment #%s has been updated:\n\n" +
                         "Stage: %s\n" +
                         "Progress: %d%%\n" +
                         "Remarks: %s\n\n" +

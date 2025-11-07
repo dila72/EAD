@@ -22,10 +22,10 @@ public class ProgressCalculationService {
      * Calculate the average progress percentage for an appointment.
      * Uses the average of all recorded percentage entries.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @return the calculated average percentage
      */
-    public int calculateAverageProgress(Long appointmentId) {
+    public int calculateAverageProgress(String appointmentId) {
         List<ProgressUpdate> updates = progressUpdateRepository.findByAppointmentIdOrderByCreatedAtAsc(appointmentId);
 
         if (updates.isEmpty()) {
@@ -46,10 +46,10 @@ public class ProgressCalculationService {
     /**
      * Get the latest progress percentage for an appointment.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @return the latest percentage or 0 if no updates exist
      */
-    public int getLatestProgress(Long appointmentId) {
+    public int getLatestProgress(String appointmentId) {
         List<ProgressUpdate> updates = progressUpdateRepository.findByAppointmentIdOrderByCreatedAtAsc(appointmentId);
 
         if (updates.isEmpty()) {

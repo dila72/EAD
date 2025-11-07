@@ -16,4 +16,8 @@ public interface ProjectService {
     ProjectDTO updateProject(String id, ProjectDTO dto);
 
     void deleteProject(String id);
+
+    ProjectDTO assignEmployeeToProject(String projectId, Long employeeId);
+
+    List<ProjectDTO> getProjectsByEmployeeId(Long employeeId);
 }

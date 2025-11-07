@@ -1,9 +1,12 @@
 package com.example.ead_backend.service.impl;
 
 import com.example.ead_backend.service.ProjectService;
+import com.example.ead_backend.service.ProgressCalculationService;
 import com.example.ead_backend.dto.ProjectDTO;
 import com.example.ead_backend.model.entity.Project;
+import com.example.ead_backend.model.entity.Employee;
 import com.example.ead_backend.repository.ProjectRepository;
+import com.example.ead_backend.repository.EmployeeRepository;
 import com.example.ead_backend.mapper.ProjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -16,7 +19,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
+    private final EmployeeRepository employeeRepository;
     private final ProjectMapper projectMapper;
+    private final ProgressCalculationService progressCalculationService;
 
     @Override
     public ProjectDTO createProject(ProjectDTO dto) {
@@ -36,7 +41,18 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDTO> getAllProjects() {
         return projectRepository.findAll()
                 .stream()
-                .map(projectMapper::toDTO)
+                .map(project -> {
+                    ProjectDTO dto = projectMapper.toDTO(project);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(project.getProjectId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +60,18 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDTO> getProjectsByCustomerId(String customerId) {
         return projectRepository.findByCustomerId(customerId)
                 .stream()
-                .map(projectMapper::toDTO)
+                .map(project -> {
+                    ProjectDTO dto = projectMapper.toDTO(project);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(project.getProjectId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -67,5 +94,37 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void deleteProject(String id) {
         projectRepository.deleteById(id);
+    }
+
+    @Override
+    public ProjectDTO assignEmployeeToProject(String projectId, Long employeeId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with id " + projectId));
+        
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found with id " + employeeId));
+        
+        project.setEmployee(employee);
+        Project updated = projectRepository.save(project);
+        return projectMapper.toDTO(updated);
+    }
+
+    @Override
+    public List<ProjectDTO> getProjectsByEmployeeId(Long employeeId) {
+        return projectRepository.findByEmployeeId(employeeId)
+                .stream()
+                .map(project -> {
+                    ProjectDTO dto = projectMapper.toDTO(project);
+                    // Populate progress percentage from progress tracking system
+                    try {
+                        int percentage = progressCalculationService.getLatestProgress(project.getProjectId());
+                        dto.setProgressPercentage(percentage);
+                    } catch (Exception e) {
+                        // If no progress data exists, default to 0
+                        dto.setProgressPercentage(0);
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

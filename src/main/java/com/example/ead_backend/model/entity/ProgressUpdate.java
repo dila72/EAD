@@ -27,7 +27,7 @@ public class ProgressUpdate {
     private Long id;
 
     @Column(name = "appointment_id", nullable = false)
-    private Long appointmentId;
+    private String appointmentId;
 
     @Column(name = "stage", nullable = false, length = 100)
     private String stage;

@@ -25,10 +25,10 @@ public class WebSocketNotificationService {
     /**
      * Broadcast a progress update to all subscribers of a specific appointment.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @param response      the progress response
      */
-    public void broadcastProgressUpdate(Long appointmentId, ProgressResponse response) {
+    public void broadcastProgressUpdate(String appointmentId, ProgressResponse response) {
         log.info("Broadcasting progress update for appointment {}", appointmentId);
 
         ProgressUpdateMessage message = ProgressUpdateMessage.builder()

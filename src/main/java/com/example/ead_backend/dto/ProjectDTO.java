@@ -10,7 +10,10 @@ public class ProjectDTO {
     private String name;
     private String description;
     private String customerId;
+    private String customerName;  // Added for displaying customer name
     private LocalDate startDate;
     private LocalDate endDate;
     private ProjectStatus status;
+    private EmployeeDTO employee;
+    private Integer progressPercentage;  // Progress percentage for the project
 }

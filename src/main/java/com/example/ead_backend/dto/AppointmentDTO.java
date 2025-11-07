@@ -9,14 +9,13 @@ public class AppointmentDTO {
     private String appointmentId;
     private String service;
     private String customerId;
+    private String customerName;  // Added for displaying customer name
     private String vehicleId;
     private String vehicleNo;
     private LocalDate date;
     private String startTime;
     private String endTime;
     private AppointmentStatus status;
-    
-    // Employee assignment fields
-    private Long employeeId;
-    private String employeeName;
+    private EmployeeDTO employee;
+    private Integer progressPercentage;  // Progress percentage for the appointment
 }

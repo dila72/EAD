@@ -25,14 +25,14 @@ public class ProgressUpdateController {
     /**
      * Create or update progress for an appointment.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @param request       the progress update request
      * @param userId        the authenticated user ID from header
      * @return the created/updated progress response
      */
     @PutMapping("/{appointmentId}")
     public ResponseEntity<ProgressResponse> updateProgress(
-            @PathVariable Long appointmentId,
+            @PathVariable String appointmentId,
             @Valid @RequestBody ProgressUpdateRequest request,
             @RequestHeader(value = "X-User-Id", required = false, defaultValue = "1") Long userId) {
 
@@ -46,14 +46,14 @@ public class ProgressUpdateController {
     /**
      * Update status only for an appointment.
      *
-     * @param appointmentId the appointment ID
+     * @param appointmentId the appointment ID (UUID string)
      * @param status        the new status
      * @param userId        the authenticated user ID from header
      * @return success response
      */
     @PostMapping("/{appointmentId}/status")
     public ResponseEntity<String> updateStatus(
-            @PathVariable Long appointmentId,
+            @PathVariable String appointmentId,
             @RequestParam String status,
             @RequestHeader(value = "X-User-Id", required = false, defaultValue = "1") Long userId) {
 

@@ -74,4 +74,29 @@ public class ProjectController {
         projectService.deleteProject(id);
         log.info("Project {} deleted successfully", id);
     }
+
+    @PutMapping("/{id}/assign-employee")
+    public ProjectDTO assignEmployee(@PathVariable String id, @RequestBody java.util.Map<String, Object> request) {
+        Object employeeIdObj = request.get("employeeId");
+        if (employeeIdObj == null) {
+            log.error("Employee ID is null in request: {}", request);
+            throw new RuntimeException("Employee ID is required");
+        }
+        
+        Long employeeId;
+        if (employeeIdObj instanceof Number) {
+            employeeId = ((Number) employeeIdObj).longValue();
+        } else if (employeeIdObj instanceof String) {
+            try {
+                employeeId = Long.parseLong((String) employeeIdObj);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Invalid employee ID format: " + employeeIdObj);
+            }
+        } else {
+            throw new RuntimeException("Invalid employee ID type: " + employeeIdObj.getClass().getName());
+        }
+        
+        log.info("Assigning employee {} to project {}", employeeId, id);
+        return projectService.assignEmployeeToProject(id, employeeId);
+    }
 }

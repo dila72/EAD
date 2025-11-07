@@ -68,7 +68,7 @@ class ProgressServiceTest {
 
         testProgressUpdate = ProgressUpdate.builder()
                 .id(1L)
-                .appointmentId(100L)
+                .appointmentId("100")
                 .stage("Inspection")
                 .percentage(50)
                 .remarks("Initial inspection completed")
@@ -79,7 +79,7 @@ class ProgressServiceTest {
 
         testProgressResponse = ProgressResponse.builder()
                 .id(1L)
-                .appointmentId(100L)
+                .appointmentId("100")
                 .stage("Inspection")
                 .percentage(50)
                 .remarks("Initial inspection completed")
@@ -91,7 +91,7 @@ class ProgressServiceTest {
     @Test
     void testCreateOrUpdateProgress_Success() {
         // Arrange
-        Long appointmentId = 100L;
+        String appointmentId = "100";
         Long updatedBy = 10L;
 
         when(progressMapper.toEntity(testRequest)).thenReturn(testProgressUpdate);
@@ -112,14 +112,14 @@ class ProgressServiceTest {
         // Verify interactions
         verify(progressUpdateRepository).save(any(ProgressUpdate.class));
         verify(notificationRepository).save(any(Notification.class));
-        verify(webSocketNotificationService).broadcastProgressUpdate(anyLong(), any(ProgressResponse.class));
-        verify(emailService).sendProgressUpdateNotification(anyString(), anyLong(), anyString(), anyInt(), anyString());
+        verify(webSocketNotificationService).broadcastProgressUpdate(anyString(), any(ProgressResponse.class));
+        verify(emailService).sendProgressUpdateNotification(anyString(), anyString(), anyString(), anyInt(), anyString());
     }
 
     @Test
     void testCreateOrUpdateProgress_CreatesNotification() {
         // Arrange
-        Long appointmentId = 100L;
+        String appointmentId = "100";
         Long updatedBy = 10L;
 
         when(progressMapper.toEntity(testRequest)).thenReturn(testProgressUpdate);
@@ -144,7 +144,7 @@ class ProgressServiceTest {
     @Test
     void testGetProgressForAppointment_ReturnsMultipleUpdates() {
         // Arrange
-        Long appointmentId = 100L;
+        String appointmentId = "100";
 
         ProgressUpdate update1 = ProgressUpdate.builder()
                 .id(1L)
@@ -178,7 +178,7 @@ class ProgressServiceTest {
     @Test
     void testCalculateProgressPercentage_DelegatesToCalculationService() {
         // Arrange
-        Long appointmentId = 100L;
+        String appointmentId = "100";
         when(progressCalculationService.getLatestProgress(appointmentId)).thenReturn(65);
 
         // Act
@@ -192,7 +192,7 @@ class ProgressServiceTest {
     @Test
     void testCreateOrUpdateProgress_HandlesWebSocketFailure() {
         // Arrange
-        Long appointmentId = 100L;
+        String appointmentId = "100";
         Long updatedBy = 10L;
 
         when(progressMapper.toEntity(testRequest)).thenReturn(testProgressUpdate);
@@ -203,7 +203,7 @@ class ProgressServiceTest {
 
         // Simulate WebSocket failure
         doThrow(new RuntimeException("WebSocket connection failed"))
-                .when(webSocketNotificationService).broadcastProgressUpdate(anyLong(), any(ProgressResponse.class));
+                .when(webSocketNotificationService).broadcastProgressUpdate(anyString(), any(ProgressResponse.class));
 
         // Act & Assert - should not throw exception
         ProgressResponse result = progressService.createOrUpdateProgress(appointmentId, testRequest, updatedBy);
@@ -216,7 +216,7 @@ class ProgressServiceTest {
     @Test
     void testCreateOrUpdateProgress_HandlesEmailFailure() {
         // Arrange
-        Long appointmentId = 100L;
+        String appointmentId = "100";
         Long updatedBy = 10L;
 
         when(progressMapper.toEntity(testRequest)).thenReturn(testProgressUpdate);
@@ -227,7 +227,7 @@ class ProgressServiceTest {
 
         // Simulate email failure
         doThrow(new RuntimeException("Email server unavailable"))
-                .when(emailService).sendProgressUpdateNotification(anyString(), anyLong(), anyString(), anyInt(), anyString());
+                .when(emailService).sendProgressUpdateNotification(anyString(), anyString(), anyString(), anyInt(), anyString());
 
         // Act & Assert - should not throw exception
         ProgressResponse result = progressService.createOrUpdateProgress(appointmentId, testRequest, updatedBy);
