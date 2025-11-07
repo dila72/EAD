@@ -30,11 +30,6 @@ export default function EmployeeSidebar() {
       label: 'Appointments & Requests',
     },
     {
-      href: '/employee/time-logs',
-      icon: Clock,
-      label: 'Time Logs',
-    },
-    {
       href: '/employee/profile',
       icon: User,
       label: 'Profile',

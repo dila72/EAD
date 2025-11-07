@@ -38,11 +38,6 @@ export default function CustomerSidebar() {
       label: 'My Vehicles',
     },
     {
-      href: '/customer/notifications',
-      icon: Bell,
-      label: 'Notifications',
-    },
-    {
       href: '/customer/profile',
       icon: User,
       label: 'Profile',
