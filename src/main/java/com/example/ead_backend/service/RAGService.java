@@ -107,7 +107,7 @@ public class RAGService {
     private String getCompanyInfo() {
         return """
                 === COMPANY INFORMATION ===
-                Company Name: EAD Automobile Service Center
+                Company Name: Automobile Service Center
                 We are a professional automobile service center specializing in vehicle maintenance and repair.
                 We offer quality service with experienced technicians and flexible scheduling.
                 """;
