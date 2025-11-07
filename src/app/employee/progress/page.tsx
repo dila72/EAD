@@ -397,7 +397,7 @@ export default function EmployeeProgressPage() {
         location: 'On-site',
         customerName: 'Customer',
         tag: 'Project',
-        progressPercentage: 0,
+        progressPercentage: proj.progressPercentage ?? 0,  // Use backend value or default to 0
         hoursLogged: 0,
         estimatedHours: 40,
         status: (proj.status?.toLowerCase() || 'planned') as any,
@@ -418,10 +418,6 @@ export default function EmployeeProgressPage() {
 
   useEffect(() => {
     fetchAppointments();
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchAppointments, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   // Timer toggle handler
@@ -487,19 +483,8 @@ export default function EmployeeProgressPage() {
     try {
       await updateProgress(selectedAppointment.appointmentId, data);
 
-      // Update local state
-      setAppointments(prev =>
-        prev.map(a =>
-          a.appointmentId === selectedAppointment.appointmentId
-            ? { 
-                ...a, 
-                progressPercentage: data.percentage, 
-                status: data.stage.toLowerCase() as any,
-                latestRemarks: data.remarks 
-              }
-            : a
-        )
-      );
+      // Refetch appointments from backend to get updated data
+      await fetchAppointments();
 
       alert('Status updated successfully!');
     } catch (err) {

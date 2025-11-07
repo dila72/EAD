@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, User, Briefcase, CheckCircle, AlertCircle, Phone, Mail, Edit, X } from 'lucide-react';
 import { employeeService, ProgressUpdateData } from '@/lib/employeeService';
+import api from '@/lib/apiClient';
 import { Appointment } from '@/types';
 
 interface UpdateModalState {
@@ -72,18 +73,19 @@ export default function EmployeeAppointmentsPage() {
       setUpdating(true);
       setError(null);
 
-      // Combine status update and progress update into one call
-      // If no progress data, use current values
+      // Update the appointment status directly
       const updateData = {
-        stage: statusUpdate || updateModal.appointment.status || 'PENDING',
-        percentage: progressData.percentage > 0 ? progressData.percentage : 0,
-        remarks: progressData.remarks || `Status updated to ${statusUpdate}`
+        service: updateModal.appointment.serviceName,
+        customerId: updateModal.appointment.customerId,
+        vehicleId: updateModal.appointment.vehicleId,
+        vehicleNo: updateModal.appointment.vehicleNumber,
+        date: updateModal.appointment.date,
+        startTime: updateModal.appointment.time,
+        endTime: updateModal.appointment.time, // Use same time as end time
+        status: statusUpdate || updateModal.appointment.status || 'PENDING'
       };
 
-      await employeeService.createProgressUpdate(
-        updateModal.appointment.id,
-        updateData
-      );
+      await api.put(`/appointments/${updateModal.appointment.id}`, updateData);
 
       // Refresh appointments
       await fetchData();
@@ -184,6 +186,10 @@ export default function EmployeeAppointmentsPage() {
                       {/* Appointment Info */}
                       <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
                         <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <User className="w-4 h-4 text-gray-500" />
+                          <span className="font-medium">Customer: {appointment.customerName || 'Customer'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
                           <Calendar className="w-4 h-4 text-gray-500" />
                           <span className="font-medium">{appointment.date}</span>
                         </div>
@@ -192,7 +198,7 @@ export default function EmployeeAppointmentsPage() {
                           <span>{appointment.time}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <User className="w-4 h-4 text-gray-500" />
+                          <Briefcase className="w-4 h-4 text-gray-500" />
                           <span>Vehicle: {appointment.vehicleNumber}</span>
                         </div>
                       </div>

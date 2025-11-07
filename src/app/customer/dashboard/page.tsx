@@ -17,14 +17,6 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     loadDashboardData();
-    
-    // Set up an interval to refresh data periodically (every 30 seconds)
-    const interval = setInterval(() => {
-      loadDashboardData();
-    }, 30000);
-    
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
   }, []);
 
   const loadDashboardData = async () => {

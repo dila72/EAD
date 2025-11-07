@@ -20,6 +20,7 @@ export interface Project {
   approvedBy?: string;
   estimatedCost?: number;
   notes?: string;
+  progressPercentage?: number;
 }
 
 /**
@@ -46,6 +47,7 @@ const mapProjectDtoToProject = (dto: ProjectDTO): Project => {
     startDate: dto.startDate,
     endDate: dto.endDate,
     status: friendlyStatus,
+    progressPercentage: dto.progressPercentage ?? 0,
   };
 };
 

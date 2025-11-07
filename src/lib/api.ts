@@ -43,7 +43,7 @@ export async function getEmployeeAppointments(employeeId?: string): Promise<Appo
       status: apt.status,
       assignedEmployee: apt.employee ? `${apt.employee.firstName} ${apt.employee.lastName}` : undefined,
       type: 'Appointment',
-      progressPercentage: 0,
+      progressPercentage: apt.progressPercentage ?? 0,  // Use backend value or default to 0
       actualHours: 0,
       estimatedHours: 2,
       timerRunning: false,

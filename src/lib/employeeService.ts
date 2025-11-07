@@ -15,6 +15,7 @@ export const employeeService = {
     return data.map((apt: any) => ({
       id: apt.appointmentId,
       customerId: apt.customerId,
+      customerName: apt.customerName || 'Customer', // Include customer name
       vehicleId: apt.vehicleId,
       vehicleNumber: apt.vehicleNo,
       serviceName: apt.service,
@@ -43,6 +44,7 @@ export const employeeService = {
       completedDate: proj.endDate,
       status: proj.status,
       assignedEmployee: proj.employee ? `${proj.employee.firstName} ${proj.employee.lastName}` : undefined,
+      progressPercentage: proj.progressPercentage ?? 0,  // Use backend value or default to 0
       type: 'project' // Add type to differentiate from appointments
     }));
   },

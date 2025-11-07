@@ -251,6 +251,9 @@ export default function MyAppointments() {
                   Date & Time
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Progress
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -261,7 +264,7 @@ export default function MyAppointments() {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredAppointments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     {activeTab === 'all' && 'No appointments found'}
                     {activeTab === 'upcoming' && 'No upcoming appointments'}
                     {activeTab === 'completed' && 'No completed appointments'}
@@ -294,31 +297,65 @@ export default function MyAppointments() {
                         </div>
                       </div>
                     </td>
+                    <td className="px-6 py-4">
+                      <div className="w-full">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-700">
+                            {appointment.progressPercentage ?? 0}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-500 ${
+                              (appointment.progressPercentage ?? 0) === 100
+                                ? 'bg-green-600'
+                                : (appointment.progressPercentage ?? 0) > 50
+                                ? 'bg-blue-600'
+                                : 'bg-yellow-500'
+                            }`}
+                            style={{ width: `${appointment.progressPercentage ?? 0}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(appointment.status)}`}>
                         {appointment.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-4">
-                      {/* Show Cancel button for non-completed/non-cancelled appointments */}
-                      {['upcoming', 'pending', 'approved'].includes(appointment.status.toLowerCase()) && (
-                        <button
-                          onClick={() => handleCancel(appointment.id)}
-                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                        >
-                          Cancel
-                        </button>
-                      )}
-
-                      {/* Show Delete only when viewing the Completed tab */}
-                      {activeTab === 'completed' && appointment.status.toLowerCase() === 'completed' && (
-                        <button
-                          onClick={() => handleDelete(appointment.id)}
-                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                        >
-                          Delete
-                        </button>
-                      )}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center gap-3">
+                        {(() => {
+                          const statusLower = appointment.status.toLowerCase();
+                          
+                          // Cancel button - show ONLY for upcoming/pending/approved appointments
+                          if (['upcoming', 'pending', 'approved'].includes(statusLower)) {
+                            return (
+                              <button
+                                onClick={() => handleCancel(appointment.id)}
+                                className="text-red-600 hover:text-red-900 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            );
+                          }
+                          
+                          // Delete button - show ONLY for completed appointments
+                          if (statusLower === 'completed') {
+                            return (
+                              <button
+                                onClick={() => handleDelete(appointment.id)}
+                                className="text-red-600 hover:text-red-900 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            );
+                          }
+                          
+                          // Show "No actions" for cancelled or any other status
+                          return <span className="text-gray-400 text-sm">No actions</span>;
+                        })()}
+                      </div>
                     </td>
                   </tr>
                 ))

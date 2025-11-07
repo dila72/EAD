@@ -17,6 +17,7 @@ export interface Appointment {
   date: string;
   time: string;
   status: string;
+  progressPercentage?: number;
 }
 
 export const appointmentService = {
@@ -32,7 +33,8 @@ export const appointmentService = {
       serviceName: d.service || d.serviceName,
       date: d.date,
       time: d.startTime || d.time,
-      status: d.status
+      status: d.status,
+      progressPercentage: d.progressPercentage ?? 0
     }));
   },
 
@@ -47,7 +49,8 @@ export const appointmentService = {
       serviceName: d.service || d.serviceName,
       date: d.date,
       time: d.startTime || d.time,
-      status: d.status
+      status: d.status,
+      progressPercentage: d.progressPercentage ?? 0
     }));
   },
 

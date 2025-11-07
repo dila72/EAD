@@ -19,6 +19,7 @@ export interface ProjectDTO {
   startDate: string; // ISO date string (YYYY-MM-DD)
   endDate?: string;
   status: ProjectStatus | string;
+  progressPercentage?: number;
 }
 
 // Frontend-friendly project interface

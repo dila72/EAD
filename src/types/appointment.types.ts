@@ -27,6 +27,7 @@ export interface AppointmentDTO {
 export interface Appointment {
   id: string;
   customerId?: string;
+  customerName?: string; // Customer's full name
   vehicleId?: string;
   vehicleNumber: string;
   serviceName: string;
