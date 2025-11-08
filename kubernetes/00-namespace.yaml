@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ead-application
+  labels:
+    name: ead-application
+    environment: production
