@@ -27,5 +27,5 @@ data:
   # Database URL (internal service name)
   SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/ead_automobile"
   
-  # API URL for frontend
-  NEXT_PUBLIC_API_URL: "http://backend-service:8080"
+  # API URL for frontend (use ingress URL for external access)
+  NEXT_PUBLIC_API_URL: "http://ead-app.example.com/api"
