@@ -90,12 +90,15 @@ export default function AdminProjectsPage() {
   const getStatusBadge = (status: string) => {
     const statusLower = status.toLowerCase();
     switch (statusLower) {
+      case 'requesting':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'assigned':
+        return 'bg-blue-100 text-blue-800';
+      case 'in progress':
+      case 'in_progress':
+        return 'bg-orange-100 text-orange-800';
       case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'ongoing':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -191,19 +194,22 @@ export default function AdminProjectsPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Pending</div>
           <div className="text-2xl font-bold text-yellow-600">
-            {projects.filter(p => p.status === 'Pending').length}
+            {projects.filter(p => {
+              const status = p.status?.toUpperCase();
+              return status === 'REQUESTING' || status === 'ASSIGNED';
+            }).length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Ongoing</div>
           <div className="text-2xl font-bold text-blue-600">
-            {projects.filter(p => p.status === 'Ongoing').length}
+            {projects.filter(p => p.status?.toUpperCase() === 'IN_PROGRESS').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Completed</div>
           <div className="text-2xl font-bold text-green-600">
-            {projects.filter(p => p.status === 'Completed').length}
+            {projects.filter(p => p.status?.toUpperCase() === 'COMPLETED').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
