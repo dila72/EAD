@@ -20,4 +20,6 @@ public class CustomerProfileDTO {
     private String lastName;
     private String email; // Read-only, not editable
     private String phoneNumber;
+    private String profileImageUrl; // Local storage image URL
+    private String profileImagePublicId; // File path for local storage (for deletion)
 }

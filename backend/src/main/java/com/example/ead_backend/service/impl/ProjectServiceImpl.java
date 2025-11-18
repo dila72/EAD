@@ -26,6 +26,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectDTO createProject(ProjectDTO dto) {
         Project entity = projectMapper.toEntity(dto);
+        // Set default status to REQUESTING for new projects
+        entity.setStatus(com.example.ead_backend.model.enums.ProjectStatus.REQUESTING);
         Project saved = projectRepository.save(entity);
         return projectMapper.toDTO(saved);
     }
@@ -105,6 +107,8 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new RuntimeException("Employee not found with id " + employeeId));
         
         project.setEmployee(employee);
+        // Change status from REQUESTING to ASSIGNED when employee is assigned
+        project.setStatus(com.example.ead_backend.model.enums.ProjectStatus.ASSIGNED);
         Project updated = projectRepository.save(project);
         return projectMapper.toDTO(updated);
     }

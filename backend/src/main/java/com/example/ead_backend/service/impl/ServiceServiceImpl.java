@@ -4,7 +4,7 @@ import com.example.ead_backend.dto.ServiceDTO;
 import com.example.ead_backend.mapper.ServiceMapper;
 import com.example.ead_backend.model.entity.Service;
 import com.example.ead_backend.repository.ServiceRepository;
-import com.example.ead_backend.service.CloudinaryService;
+import com.example.ead_backend.service.LocalFileStorageService;
 import com.example.ead_backend.service.ServiceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     private final ServiceRepository serviceRepository;
     private final ServiceMapper serviceMapper;
-    private final CloudinaryService cloudinaryService;
+    private final LocalFileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -55,8 +55,8 @@ public class ServiceServiceImpl implements ServiceService {
             throw new RuntimeException("Service with name '" + serviceDTO.getName() + "' already exists");
         }
         
-        // Upload image to Cloudinary
-        Map<String, Object> uploadResult = cloudinaryService.uploadImage(image);
+        // Upload image to local storage
+        Map<String, Object> uploadResult = fileStorageService.uploadImage(image, "services");
         String imageUrl = (String) uploadResult.get("secure_url");
         String publicId = (String) uploadResult.get("public_id");
         
@@ -147,7 +147,7 @@ public class ServiceServiceImpl implements ServiceService {
         // Update image if provided
         if (image != null && !image.isEmpty()) {
             // Upload new image and delete old one
-            Map<String, Object> uploadResult = cloudinaryService.updateImage(image, existing.getImagePublicId());
+            Map<String, Object> uploadResult = fileStorageService.updateImage(image, existing.getImagePublicId());
             String imageUrl = (String) uploadResult.get("secure_url");
             String publicId = (String) uploadResult.get("public_id");
             
@@ -178,13 +178,13 @@ public class ServiceServiceImpl implements ServiceService {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Service not found with ID: " + id));
         
-        // Delete image from Cloudinary if exists
+        // Delete image from local storage if exists
         if (service.getImagePublicId() != null && !service.getImagePublicId().isEmpty()) {
             try {
-                cloudinaryService.deleteImage(service.getImagePublicId());
-                log.info("Service image deleted from Cloudinary: {}", service.getImagePublicId());
+                fileStorageService.deleteImage(service.getImagePublicId());
+                log.info("Service image deleted from local storage: {}", service.getImagePublicId());
             } catch (IOException e) {
-                log.error("Failed to delete service image from Cloudinary, continuing with service deletion", e);
+                log.error("Failed to delete service image from local storage, continuing with service deletion", e);
                 // Continue with service deletion even if image deletion fails
             }
         }

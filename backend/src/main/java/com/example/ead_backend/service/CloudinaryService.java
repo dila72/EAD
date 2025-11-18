@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,9 +12,15 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Cloudinary Service
+ * DISABLED - Using local file storage instead
+ * This service is kept for reference but is disabled via ConditionalOnProperty
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(name = "cloudinary.enabled", havingValue = "true", matchIfMissing = false)
 public class CloudinaryService {
 
     private final Cloudinary cloudinary;
@@ -26,17 +33,29 @@ public class CloudinaryService {
      * @throws IOException if upload fails
      */
     public Map<String, Object> uploadImage(MultipartFile file) throws IOException {
+        return uploadImage(file, "vehicles");
+    }
+
+    /**
+     * Upload an image to Cloudinary with custom subfolder
+     *
+     * @param file the image file to upload
+     * @param subfolder the subfolder name (e.g., "vehicles", "customers")
+     * @return Map containing the upload result with url and public_id
+     * @throws IOException if upload fails
+     */
+    public Map<String, Object> uploadImage(MultipartFile file, String subfolder) throws IOException {
         try {
             log.info("Uploading image to Cloudinary: {}", file.getOriginalFilename());
             
             // Generate a unique public ID for the image
-            String publicId = "vehicles/" + UUID.randomUUID().toString();
+            String publicId = subfolder + "/" + UUID.randomUUID().toString();
             
             Map<String, Object> uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
                     ObjectUtils.asMap(
                             "public_id", publicId,
-                            "folder", "ead-automobile/vehicles",
+                            "folder", "ead-automobile/" + subfolder,
                             "resource_type", "image",
                             "transformation", ObjectUtils.asMap(
                                     "width", 800,

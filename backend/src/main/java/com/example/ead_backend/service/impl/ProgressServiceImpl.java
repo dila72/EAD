@@ -120,9 +120,9 @@ public class ProgressServiceImpl implements ProgressService {
             if ("completed".equals(stageLower) || percentage >= 100) {
                 newStatus = com.example.ead_backend.model.enums.AppointmentStatus.COMPLETED;
                 log.info("Updating appointment {} status to COMPLETED", id);
-            } else if ("cancelled".equals(stageLower)) {
-                newStatus = com.example.ead_backend.model.enums.AppointmentStatus.CANCELLED;
-                log.info("Updating appointment {} status to CANCELLED", id);
+            } else if ("in progress".equals(stageLower) || "in_progress".equals(stageLower)) {
+                newStatus = com.example.ead_backend.model.enums.AppointmentStatus.IN_PROGRESS;
+                log.info("Updating appointment {} status to IN_PROGRESS", id);
             } else {
                 log.debug("Appointment {} progress stage is '{}' (status remains {})", id, stage, appointment.getStatus());
                 return;
@@ -144,15 +144,9 @@ public class ProgressServiceImpl implements ProgressService {
                 } else if ("in progress".equals(stageLower) || "in_progress".equals(stageLower)) {
                     newStatus = com.example.ead_backend.model.enums.ProjectStatus.IN_PROGRESS;
                     log.info("Updating project {} status to IN_PROGRESS", id);
-                } else if ("paused".equals(stageLower)) {
-                    newStatus = com.example.ead_backend.model.enums.ProjectStatus.ON_HOLD;
-                    log.info("Updating project {} status to ON_HOLD", id);
-                } else if ("cancelled".equals(stageLower)) {
-                    newStatus = com.example.ead_backend.model.enums.ProjectStatus.CANCELLED;
-                    log.info("Updating project {} status to CANCELLED", id);
-                } else if ("not started".equals(stageLower) || "not_started".equals(stageLower)) {
-                    newStatus = com.example.ead_backend.model.enums.ProjectStatus.PLANNED;
-                    log.info("Updating project {} status to PLANNED", id);
+                } else {
+                    log.debug("Project {} progress stage is '{}' (status remains {})", id, stage, project.getStatus());
+                    return;
                 }
                 
                 if (newStatus != null && newStatus != project.getStatus()) {

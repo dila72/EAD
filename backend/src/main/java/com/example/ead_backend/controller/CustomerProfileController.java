@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Controller for customer profile management
@@ -86,6 +87,41 @@ public class CustomerProfileController {
             @Valid @RequestBody UpdateCustomerProfileRequest request) {
         
         CustomerProfileDTO updatedProfile = customerProfileService.updateCustomerProfile(userId, request);
+        return ResponseEntity.ok(updatedProfile);
+    }
+
+    /**
+     * Upload profile image for current authenticated customer
+     */
+    @PostMapping("/me/image")
+    public ResponseEntity<CustomerProfileDTO> uploadMyProfileImage(
+            Authentication authentication,
+            @RequestParam("image") MultipartFile imageFile) {
+        
+        String email = authentication.getName();
+        CustomerProfileDTO currentProfile = customerProfileService.getCustomerProfileByEmail(email);
+        
+        CustomerProfileDTO updatedProfile = customerProfileService.uploadProfileImage(
+                currentProfile.getUserId(), 
+                imageFile
+        );
+        
+        return ResponseEntity.ok(updatedProfile);
+    }
+
+    /**
+     * Delete profile image for current authenticated customer
+     */
+    @DeleteMapping("/me/image")
+    public ResponseEntity<CustomerProfileDTO> deleteMyProfileImage(Authentication authentication) {
+        
+        String email = authentication.getName();
+        CustomerProfileDTO currentProfile = customerProfileService.getCustomerProfileByEmail(email);
+        
+        CustomerProfileDTO updatedProfile = customerProfileService.deleteProfileImage(
+                currentProfile.getUserId()
+        );
+        
         return ResponseEntity.ok(updatedProfile);
     }
 }

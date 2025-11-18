@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -159,7 +160,121 @@ public class RAGService {
     }
 
     private String getAvailableSlotsContext() {
-        return "=== AVAILABLE SLOTS ===\nPlease contact us directly to check available time slots.";
+        try {
+            log.debug("Fetching available time slots...");
+
+            // Define available time slots (business hours: 9 AM to 6 PM, 30-minute slots)
+            LocalDate today = LocalDate.now();
+            LocalDate endDate = today.plusDays(14); // Show next 14 days for better coverage
+
+            StringBuilder sb = new StringBuilder("=== AVAILABLE TIME SLOTS ===\n");
+            sb.append("We are open Monday - Saturday, 9:00 AM - 6:00 PM\n");
+            sb.append("Appointments are scheduled in 30-minute slots\n\n");
+
+            // Get all appointments - we can't use date range easily without appointmentTime
+            // field
+            // So we'll get all appointments and filter by date
+            List<Appointment> allAppointments = appointmentRepository.findAll();
+
+            // Filter appointments for the next 14 days
+            List<Appointment> existingAppointments = allAppointments.stream()
+                    .filter(apt -> apt.getDate() != null &&
+                            !apt.getDate().isBefore(today) &&
+                            !apt.getDate().isAfter(endDate))
+                    .toList();
+
+            int daysShown = 0;
+            int maxDaysToShow = 7; // Show up to 7 business days
+            int maxSlotsPerDay = 8; // Show max 8 slots per day
+
+            // Check next 14 days to find enough business days
+            for (int day = 0; day < 14 && daysShown < maxDaysToShow; day++) {
+                LocalDate date = today.plusDays(day);
+
+                // Skip Sundays (assuming closed on Sundays)
+                if (date.getDayOfWeek().getValue() == 7) {
+                    continue;
+                }
+
+                List<String> availableTimesForDay = new java.util.ArrayList<>();
+
+                // Check 30-minute slots from 9 AM to 5:30 PM (9:00, 9:30, 10:00, 10:30, ...
+                // 17:30)
+                // Last appointment starts at 5:30 PM and ends at 6:00 PM
+                for (int hour = 9; hour <= 17; hour++) {
+                    for (int minute = 0; minute < 60; minute += 30) {
+                        // Skip 6:00 PM slot - last slot is 5:30 PM
+                        if (hour == 17 && minute == 30) {
+                            // This is the last slot (5:30 PM)
+                        }
+
+                        final int currentHour = hour;
+                        final int currentMinute = minute;
+                        String timeSlot = String.format("%02d:%02d", currentHour, currentMinute);
+
+                        // Check if this slot is already booked
+                        boolean isBooked = existingAppointments.stream()
+                                .anyMatch(apt -> {
+                                    if (apt.getDate() != null &&
+                                            apt.getDate().equals(date) &&
+                                            apt.getStartTime() != null &&
+                                            (apt.getStatus().toString().equals("REQUESTING") ||
+                                                    apt.getStatus().toString().equals("ASSIGNED") ||
+                                                    apt.getStatus().toString().equals("IN_PROGRESS"))) {
+
+                                        // Parse the start time and compare the hour and minute
+                                        try {
+                                            String startTime = apt.getStartTime();
+                                            // Handle formats like "09:00", "9:00", "09:30", "9:30"
+                                            String[] parts = startTime.split(":");
+                                            int appointmentHour = Integer.parseInt(parts[0]);
+                                            int appointmentMinute = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+                                            return appointmentHour == currentHour && appointmentMinute == currentMinute;
+                                        } catch (Exception e) {
+                                            return false;
+                                        }
+                                    }
+                                    return false;
+                                });
+
+                        if (!isBooked) {
+                            availableTimesForDay.add(timeSlot);
+                        }
+                    }
+                }
+
+                // Add available slots for this day if any
+                if (!availableTimesForDay.isEmpty()) {
+                    sb.append(String.format("Date: %s (%s)\n",
+                            date.format(DATE_FORMATTER),
+                            date.getDayOfWeek().toString().substring(0, 3)));
+
+                    // Show limited slots per day to keep response concise
+                    int slotsToShow = Math.min(availableTimesForDay.size(), maxSlotsPerDay);
+                    for (int i = 0; i < slotsToShow; i++) {
+                        sb.append(String.format("  - %s\n", availableTimesForDay.get(i)));
+                    }
+
+                    if (availableTimesForDay.size() > maxSlotsPerDay) {
+                        sb.append(String.format("  ... and %d more slots\n",
+                                availableTimesForDay.size() - maxSlotsPerDay));
+                    }
+                    sb.append("\n");
+                    daysShown++;
+                }
+            }
+
+            if (daysShown == 0) {
+                return "=== AVAILABLE SLOTS ===\nNo available time slots in the next 14 days. Please contact us directly.";
+            }
+
+            log.debug("Found available time slots for {} days", daysShown);
+            return sb.toString();
+
+        } catch (Exception e) {
+            log.error("Error retrieving available slots", e);
+            return "=== AVAILABLE SLOTS ===\nUnable to retrieve available slots. Please contact us directly.";
+        }
     }
 
     private String getCustomerAppointmentsContext(String customerId) {

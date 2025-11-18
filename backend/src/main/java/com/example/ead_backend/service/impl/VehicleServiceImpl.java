@@ -7,7 +7,7 @@ import com.example.ead_backend.model.entity.User;
 import com.example.ead_backend.model.entity.Vehicle;
 import com.example.ead_backend.repository.CustomerRepository;
 import com.example.ead_backend.repository.VehicleRepository;
-import com.example.ead_backend.service.CloudinaryService;
+import com.example.ead_backend.service.LocalFileStorageService;
 import com.example.ead_backend.service.VehicleService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class VehicleServiceImpl implements VehicleService {
     private final VehicleRepository vehicleRepository;
     private final CustomerRepository customerRepository;
     private final VehicleMapper vehicleMapper;
-    private final CloudinaryService cloudinaryService;
+    private final LocalFileStorageService fileStorageService;
 
     @Override
     public VehicleDTO createVehicle(VehicleDTO vehicleDTO) {
@@ -50,8 +50,8 @@ public class VehicleServiceImpl implements VehicleService {
         Customer customer = customerRepository.findById(vehicleDTO.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found with id " + vehicleDTO.getCustomerId()));
 
-        // Upload image to Cloudinary
-        Map<String, Object> uploadResult = cloudinaryService.uploadImage(image);
+        // Upload image to local storage
+        Map<String, Object> uploadResult = fileStorageService.uploadImage(image, "vehicles");
         String imageUrl = (String) uploadResult.get("secure_url");
         String publicId = (String) uploadResult.get("public_id");
 
@@ -126,7 +126,7 @@ public class VehicleServiceImpl implements VehicleService {
         // Update image if provided
         if (image != null && !image.isEmpty()) {
             // Upload new image and delete old one
-            Map<String, Object> uploadResult = cloudinaryService.updateImage(image, existing.getImagePublicId());
+            Map<String, Object> uploadResult = fileStorageService.updateImage(image, existing.getImagePublicId());
             String imageUrl = (String) uploadResult.get("secure_url");
             String publicId = (String) uploadResult.get("public_id");
 
@@ -159,10 +159,10 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehicle not found with id " + id));
 
-        // Delete image from Cloudinary if exists
+        // Delete image from local storage if exists
         if (vehicle.getImagePublicId() != null && !vehicle.getImagePublicId().isEmpty()) {
             try {
-                cloudinaryService.deleteImage(vehicle.getImagePublicId());
+                fileStorageService.deleteImage(vehicle.getImagePublicId());
             } catch (IOException e) {
                 // Log error but continue with vehicle deletion
                 // You might want to handle this differently based on your requirements
@@ -215,8 +215,8 @@ public class VehicleServiceImpl implements VehicleService {
             Authentication authentication) throws IOException {
         Customer customer = getAuthenticatedCustomer(authentication);
 
-        // Upload image to Cloudinary
-        Map<String, Object> uploadResult = cloudinaryService.uploadImage(image);
+        // Upload image to local storage
+        Map<String, Object> uploadResult = fileStorageService.uploadImage(image, "vehicles");
         String imageUrl = (String) uploadResult.get("secure_url");
         String publicId = (String) uploadResult.get("public_id");
 
@@ -290,7 +290,7 @@ public class VehicleServiceImpl implements VehicleService {
         // Update image if provided
         if (image != null && !image.isEmpty()) {
             // Upload new image and delete old one
-            Map<String, Object> uploadResult = cloudinaryService.updateImage(image, existing.getImagePublicId());
+            Map<String, Object> uploadResult = fileStorageService.updateImage(image, existing.getImagePublicId());
             String imageUrl = (String) uploadResult.get("secure_url");
             String publicId = (String) uploadResult.get("public_id");
 
@@ -320,10 +320,10 @@ public class VehicleServiceImpl implements VehicleService {
         // Verify ownership
         verifyVehicleOwnership(vehicle, customer);
 
-        // Delete image from Cloudinary if exists
+        // Delete image from local storage if exists
         if (vehicle.getImagePublicId() != null && !vehicle.getImagePublicId().isEmpty()) {
             try {
-                cloudinaryService.deleteImage(vehicle.getImagePublicId());
+                fileStorageService.deleteImage(vehicle.getImagePublicId());
             } catch (IOException e) {
                 // Log error but continue with vehicle deletion
             }

@@ -25,6 +25,12 @@ public class Customer {
     @Column(nullable = false)
     private String phoneNumber;
 
+    @Column(length = 500)
+    private String profileImageUrl; // Local storage image URL
+
+    @Column(length = 255)
+    private String profileImagePublicId; // File path for local storage (for deletion)
+
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vehicle> vehicles;
 

@@ -46,11 +46,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<!-- Add Spring Boot Actuator for health checks and monitoring -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
 		<!-- Add Spring Boot Mail starter to provide org.springframework.mail classes -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

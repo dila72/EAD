@@ -46,6 +46,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         // ensure new fields are copied (mapper should handle this if configured)
         entity.setCustomerId(dto.getCustomerId());
         entity.setVehicleId(dto.getVehicleId());
+        // Set default status to REQUESTING for new appointments
+        entity.setStatus(AppointmentStatus.REQUESTING);
         Appointment saved = appointmentRepository.save(entity);
         return appointmentMapper.toDTO(saved);
     }
@@ -161,6 +163,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new RuntimeException("Employee not found with id " + employeeId));
         
         appointment.setEmployee(employee);
+        // Change status from REQUESTING to ASSIGNED when employee is assigned
+        appointment.setStatus(AppointmentStatus.ASSIGNED);
         Appointment updated = appointmentRepository.save(appointment);
         return appointmentMapper.toDTO(updated);
     }
