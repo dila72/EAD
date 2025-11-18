@@ -1,5 +1,9 @@
 package com.example.ead_backend.model.enums;
 
-public class AppointmentStatus {
-
+public enum AppointmentStatus {
+    REQUESTING,
+    ASSIGNED,
+    IN_PROGRESS,
+    COMPLETED,
+    CANCELLED
 }
