@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/", "/error").permitAll()
+                        .requestMatchers("/actuator/health/**").permitAll() // Allow health checks
                         .requestMatchers("/api/auth/**").permitAll()
 
                         .requestMatchers("/api/files/**").permitAll() // Allow public access to uploaded files
