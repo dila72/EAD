@@ -9,10 +9,11 @@ metadata:
     # cert-manager.io/cluster-issuer: "letsencrypt-prod"  # Uncomment for automatic TLS
 spec:
   ingressClassName: nginx
-  tls:
-  - hosts:
-    - ead-app.example.com  # Replace with your domain
-    secretName: ead-tls-secret
+  # TLS configuration commented out until certificates are set up
+  # tls:
+  # - hosts:
+  #   - ead-app.example.com
+  #   secretName: ead-tls-secret
   rules:
   - host: ead-app.example.com  # Replace with your domain
     http:

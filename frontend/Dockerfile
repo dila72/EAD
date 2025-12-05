@@ -20,6 +20,10 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
+# Build argument for API URL
+ARG NEXT_PUBLIC_API_URL=http://ead-app.example.com/api
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Build the application with increased memory
 RUN npm run build
 
