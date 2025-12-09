@@ -38,19 +38,35 @@ Cluster: Docker Desktop Kubernetes
 ### Ingress
 - ✅ `ead-ingress` - NGINX ingress controller configured
 
+### Monitoring Stack
+- ✅ **Prometheus**: Metrics collection (Port 9090)
+  - 5Gi storage for metrics
+  - Scrapes: Backend, PostgreSQL, Kubernetes
+- ✅ **Grafana**: Visualization dashboards (Port 3001)
+  - Pre-configured Prometheus datasource
+  - Kubernetes cluster dashboard included
+  - Default login: admin/admin
+- ✅ **PostgreSQL Exporter**: Database metrics (Port 9187)
+
 ## Resource Summary
 ```
-Total Pods: 5/5 Running
+Total Pods: 8/8 Running (when monitoring is deployed)
 - PostgreSQL: 1/1
 - Backend: 2/2
 - Frontend: 2/2
+- Prometheus: 1/1
+- Grafana: 1/1
+- PostgreSQL Exporter: 1/1
 
-Total Services: 3
+Total Services: 6
 - postgres-service (5432)
 - backend-service (8080)
 - frontend-service (3000)
+- prometheus-service (9090)
+- grafana-service (3001)
+- postgres-exporter (9187)
 
-Storage: 10Gi PVC (hostpath)
+Storage: 17Gi PVC (10Gi PostgreSQL + 5Gi Prometheus + 2Gi Grafana)
 ```
 
 ## Access the Application
@@ -75,6 +91,18 @@ kubectl port-forward -n ead-application svc/postgres-service 5432:5432
 ```
 Then connect with: `postgresql://postgres:dila2001@localhost:5432/ead_automobile`
 
+#### Prometheus:
+```powershell
+kubectl port-forward -n ead-application svc/prometheus-service 9090:9090
+```
+Then visit: http://localhost:9090
+
+#### Grafana:
+```powershell
+kubectl port-forward -n ead-application svc/grafana-service 3001:3001
+```
+Then visit: http://localhost:3001 (Login: admin/admin)
+
 ### Method 2: Ingress (Not Yet Configured)
 To access via ingress, you need to:
 1. Install NGINX Ingress Controller
@@ -93,6 +121,12 @@ kubectl logs -n ead-application -l app=frontend -f
 
 # PostgreSQL logs
 kubectl logs -n ead-application postgres-0 -f
+
+# Prometheus logs
+kubectl logs -n ead-application -l app=prometheus -f
+
+# Grafana logs
+kubectl logs -n ead-application -l app=grafana -f
 ```
 
 ### Check Health
@@ -173,7 +207,7 @@ kubectl exec -it <backend-pod> -n ead-application -- curl localhost:8080/actuato
 2. **TODO**: Install and configure NGINX Ingress Controller
 3. **TODO**: Configure domain/DNS for external access
 4. **TODO**: Setup TLS certificates (Let's Encrypt)
-5. **TODO**: Configure monitoring (Prometheus/Grafana)
+5. ✅ **DONE**: Configure monitoring (Prometheus/Grafana)
 6. **TODO**: Setup backup strategy for PostgreSQL
 7. **TODO**: Implement CI/CD pipeline
 
